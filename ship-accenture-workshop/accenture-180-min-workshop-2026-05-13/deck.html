@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code Workshop — Accenture</title>
+
+  <style>
+    @font-face {
+      font-family: 'Anthropic Sans';
+      src: url('assets/fonts/AnthropicSans-Roman-Web.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Anthropic Serif';
+      src: url('assets/fonts/AnthropicSerif-Roman-Web.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('assets/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+      font-weight: 400;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #141413; }
+    body { font-family: 'Anthropic Sans', -apple-system, sans-serif; }
+
+    #deck-root {
+      position: fixed;
+      inset: 0;
+      --deck-scale: 1;
+    }
+
+    /* Slide transitions */
+    .slide-wrapper {
+      position: absolute; inset: 0;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+      pointer-events: none;
+    }
+    .slide-wrapper.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .slide-wrapper.exiting {
+      opacity: 0;
+    }
+
+    /* Broadcast-ported animations (ColdOpen cursor, recap annotation pulse) */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    @keyframes annotPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
+
+    /* Progress bar */
+    .progress-bar {
+      position: fixed;
+      bottom: 0; left: 0; height: 3px;
+      background: #D97757;
+      transition: width 0.4s ease;
+      z-index: 100;
+    }
+
+    /* Nav controls */
+    .nav-controls {
+      position: fixed;
+      bottom: 16px; right: 16px;
+      display: flex; gap: 6px;
+      z-index: 200;
+      transition: opacity 0.3s;
+    }
+    .nav-controls.hidden { opacity: 0; pointer-events: none; }
+    .nav-btn {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      border: 1px solid rgba(128,128,128,0.25);
+      background: rgba(20,20,19,0.7);
+      color: rgba(250,249,245,0.7);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      backdrop-filter: blur(12px);
+      transition: background 0.15s;
+    }
+    .nav-btn:hover { background: rgba(20,20,19,0.9); color: #FAF9F5; }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+    /* Counter gets the same dark-pill treatment as nav-btn — previously bare
+       40%-bone text, invisible on BONE/OAT slides (i.e. most of them). */
+    .slide-counter {
+      font-size: 12px;
+      color: rgba(250,249,245,0.85);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(20,20,19,0.7);
+      border: 1px solid rgba(128,128,128,0.25);
+      border-radius: 8px;
+      backdrop-filter: blur(12px);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Config drawer ────────────────────────────────────────────
+       Left-side full-height drawer styled after workshop_selfserve_cc.
+       Toggled by C key or gear icon. Light panel over a dim backdrop. */
+    .cfg-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 290;
+    }
+    .cfg-drawer {
+      --cfg-border: rgba(15,12,8,0.08);
+      --cfg-text: rgba(15,12,8,0.88);
+      --cfg-dim: rgba(15,12,8,0.55);
+      --cfg-faint: rgba(15,12,8,0.35);
+      --cfg-clay: #D97757;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: 440px;
+      background: #fff;
+      z-index: 300;
+      display: flex; flex-direction: column;
+      font-family: 'Anthropic Sans', -apple-system, sans-serif;
+      font-size: 14px;
+      color: var(--cfg-text);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+    }
+    .cfg-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid var(--cfg-border);
+    }
+    .cfg-head h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+    .cfg-sub { font-size: 11px; color: var(--cfg-faint); margin-top: 2px; }
+    .cfg-close {
+      background: none; border: none; font-size: 22px; line-height: 1;
+      color: var(--cfg-faint); cursor: pointer; padding: 0 4px;
+    }
+    .cfg-close:hover { color: var(--cfg-text); }
+
+    .cfg-section {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--cfg-border);
+    }
+    .cfg-section h3 {
+      font-size: 11px; font-weight: 600; color: var(--cfg-dim);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; user-select: none;
+    }
+    .cfg-section.collapsed h3 { margin-bottom: 0; }
+    .cfg-chevron {
+      font-size: 10px; color: var(--cfg-faint);
+      width: 12px; text-align: center;
+    }
+    .cfg-section h3:hover .cfg-chevron { color: var(--cfg-clay); }
+    .cfg-badge {
+      background: var(--cfg-clay); color: #fff;
+      font-size: 11px; padding: 2px 9px; border-radius: 999px;
+      font-weight: 500; text-transform: none; letter-spacing: normal;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cfg-row {
+      display: grid; grid-template-columns: 70px 1fr 90px;
+      gap: 10px; align-items: center; margin-bottom: 10px;
+    }
+    .cfg-row label { font-size: 12px; color: var(--cfg-dim); }
+    .cfg-row input[type="range"] { width: 100%; accent-color: var(--cfg-clay); }
+    .cfg-row select {
+      grid-column: 2 / 4; padding: 7px 10px;
+      border: 1px solid var(--cfg-border); border-radius: 6px;
+      background: #FAF9F5; font-family: inherit; font-size: 12.5px;
+      cursor: pointer;
+    }
+    .cfg-row select:focus { outline: none; border-color: var(--cfg-clay); }
+    .cfg-val {
+      font-size: 12px; color: var(--cfg-clay); font-weight: 600;
+      text-align: right; font-family: 'JetBrains Mono', monospace;
+    }
+
+    .cfg-brand { display: flex; align-items: center; gap: 10px; }
+    .cfg-company-name {
+      flex: 1; padding: 7px 10px; font-size: 13px;
+      border: 1px solid var(--cfg-border); border-radius: 6px;
+      background: #FAF9F5; font-family: inherit;
+    }
+    .cfg-company-name:focus { outline: none; border-color: var(--cfg-clay); }
+    .cfg-logo-drop {
+      width: 64px; height: 36px;
+      border: 1px dashed var(--cfg-border); border-radius: 6px;
+      background: #FAF9F5; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .cfg-logo-drop:hover { border-color: rgba(15,12,8,0.2); }
+    .cfg-logo-drop.dragover { border-color: var(--cfg-clay); background: rgba(217,119,87,0.06); }
+    .cfg-logo-drop img {
+      position: absolute; inset: 3px;
+      width: calc(100% - 6px); height: calc(100% - 6px);
+      object-fit: contain;
+    }
+    .cfg-logo-hint { font-size: 10px; color: var(--cfg-faint); pointer-events: none; }
+    .cfg-logo-clear {
+      width: 24px; height: 24px; padding: 0;
+      background: transparent; border: 1px solid var(--cfg-border);
+      border-radius: 4px; font-size: 14px; line-height: 1;
+      color: var(--cfg-faint); cursor: pointer;
+    }
+    .cfg-logo-clear:hover { border-color: var(--cfg-clay); color: var(--cfg-clay); }
+
+    .cfg-slides { flex: 1; min-height: 0; display: flex; flex-direction: column; border-bottom: none; }
+    .cfg-slide-list { flex: 1; overflow-y: auto; margin: 0 -22px; padding: 0 22px; }
+    .cfg-group { margin-bottom: 14px; }
+    .cfg-group-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 0; user-select: none;
+    }
+    .cfg-group-head input[type=checkbox] { accent-color: var(--cfg-clay); }
+    .cfg-group-chevron {
+      font-size: 10px; color: var(--cfg-faint); cursor: pointer;
+      width: 12px; text-align: center;
+    }
+    .cfg-group-chevron:hover { color: var(--cfg-clay); }
+    .cfg-group-title { font-weight: 500; font-size: 13px; cursor: pointer; }
+    .cfg-group-count { margin-left: auto; font-size: 11px; color: var(--cfg-faint); }
+    .cfg-group-body {
+      display: flex; flex-direction: column; gap: 2px; padding-left: 20px;
+    }
+    .cfg-slide {
+      display: grid;
+      grid-template-columns: 12px 18px 56px 1fr;
+      gap: 10px; align-items: center;
+      padding: 5px 4px; border-radius: 6px;
+      background: #fff;
+      transition: background 0.12s, box-shadow 0.12s;
+    }
+    .cfg-slide:hover { background: #FAF9F5; }
+    .cfg-slide.dragging { opacity: 0.4; }
+    .cfg-slide.drag-over { box-shadow: inset 0 2px 0 var(--cfg-clay); }
+    .cfg-drag-handle {
+      cursor: grab; color: var(--cfg-faint); font-size: 11px;
+      text-align: center; line-height: 1; letter-spacing: -2px;
+      user-select: none;
+    }
+    .cfg-drag-handle:active { cursor: grabbing; }
+    .cfg-thumb { cursor: pointer; }
+    .cfg-thumb:hover { border-color: var(--cfg-clay); }
+    .cfg-slide input[type=checkbox] { accent-color: var(--cfg-clay); }
+    .cfg-thumb {
+      width: 56px; height: 42px; object-fit: cover;
+      border-radius: 4px; border: 1px solid var(--cfg-border);
+      background: #FAF9F5;
+    }
+    .cfg-slide-info { min-width: 0; }
+    .cfg-slide-title {
+      font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; gap: 6px;
+      white-space: nowrap; overflow: hidden;
+    }
+    .cfg-slide-desc {
+      font-size: 11px; color: var(--cfg-faint);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cfg-slide.off .cfg-thumb,
+    .cfg-slide.off .cfg-slide-info { opacity: 0.35; }
+    .cfg-slide.filtered .cfg-thumb,
+    .cfg-slide.filtered .cfg-slide-info { opacity: 0.4; }
+    .cfg-slide.filtered.forced .cfg-thumb,
+    .cfg-slide.filtered.forced .cfg-slide-info { opacity: 1; }
+    .cfg-slide.filtered.forced .cfg-filtered-hint { color: #D97757; font-style: normal; }
+    .cfg-kind {
+      font-size: 9px; font-weight: 600; letter-spacing: 0.05em;
+      padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+    }
+    .cfg-filtered-hint {
+      font-size: 9px; color: var(--cfg-faint); font-style: italic; flex-shrink: 0;
+    }
+
+    .cfg-foot {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 22px; border-top: 1px solid var(--cfg-border);
+    }
+    .cfg-summary {
+      font-size: 11px; color: var(--cfg-faint);
+      font-family: 'JetBrains Mono', monospace; margin-right: auto;
+    }
+    .cfg-foot button {
+      font-family: inherit; font-size: 13px; padding: 8px 16px;
+      border-radius: 6px; border: none; cursor: pointer; font-weight: 500;
+    }
+    .cfg-btn-primary { background: var(--cfg-clay); color: #fff; }
+    .cfg-btn-primary:hover { background: #C86848; }
+    .cfg-btn-secondary { background: #FAF9F5; color: var(--cfg-dim); }
+    .cfg-btn-secondary:hover { background: var(--cfg-border); }
+
+    /* Gear icon — rendered inside Slide_Title's canvas */
+    .gear-icon {
+      position: absolute;
+      bottom: 24px; left: 24px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(250,249,245,0.15);
+      background: rgba(250,249,245,0.05);
+      color: rgba(250,249,245,0.6);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .gear-icon:hover {
+      background: rgba(250,249,245,0.12);
+      color: #FAF9F5;
+      transform: rotate(30deg);
+    }
+
+    /* ── Print-to-PDF mode ───────────────────────────────────────
+       ?print-pdf → every slide becomes a 1024×768 page. Config honors
+       URL params > localStorage > wide defaults (dur=3, lvl=0=all,
+       plat=c4e). See GE Vernova deck.html for the full
+       reasoning on the transform-anchoring fix. */
+    @page { size: 1024px 768px; margin: 0; }
+
+    html.print-pdf, html.print-pdf * {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    html.print-pdf, html.print-pdf body {
+      height: auto; overflow: visible; background: #fff;
+    }
+    html.print-pdf #deck-root {
+      position: static;
+    }
+    html.print-pdf .slide-wrapper {
+      position: relative;
+      width: 1024px; height: 768px;
+      opacity: 1 !important;
+      pointer-events: auto;
+      transition: none;
+      overflow: hidden;
+      /* Chrome paged-media counts descendant ink-overflow (broadcast slides'
+         transformed abs-pos content) toward page width → auto-shrink.
+         contain:size = wrapper size independent of children. paint/layout/
+         overflow:clip do NOT fix this — only size. */
+      contain: size;
+      page-break-after: always;
+      break-after: page;
+    }
+    /* Kill the centering transform on the inner canvas — anchor
+       top-left instead. Wrapper is 1024×768, canvas is 1024×768,
+       they overlay exactly. !important beats inline styles from
+       the Slide component. */
+    html.print-pdf .slide-wrapper > div > div {
+      top: 0 !important;
+      left: 0 !important;
+      transform: none !important;
+    }
+    html.print-pdf .slide-wrapper:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+    html.print-pdf .progress-bar,
+    html.print-pdf .nav-controls,
+    html.print-pdf .config-panel,
+    html.print-pdf .gear-icon { display: none; }
+    /* Box-shadows bleed past contain:size into adjacent pages. */
+    html.print-pdf * { box-shadow: none !important; }
+  </style>
+
+  <link rel="stylesheet" href="assets/anthropicons.css">
+  <!-- VSCode kit CSS — used by Slide_Where's IDE surface -->
+  <link rel="stylesheet" href="vscode/theme.css">
+  <link rel="stylesheet" href="vscode/structure.css">
+  <link rel="stylesheet" href="vscode/anthropicons/anthropicons.css">
+
+  <script type="module" src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" integrity="sha384-ypAFdIpmPhrhuVLN9fmIZaqZHGUVSzHiiplL/kPO2+gJ4Na4yRVbVt0YhyvWdbwn" crossorigin="anonymous"></script>
+
+  <!-- Broadcast COLORS/TERM globals. Plain JS (not babel) — must exist before
+       deck-broadcast-components.jsx references them at module scope. -->
+  <script src="../../_shared/colors.js"></script>
+  <script src="../../_shared/deck-nav.js"></script>
+
+  <!-- React -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Components & Slides.
+       All loaded as type="text/babel" so Babel standalone queues them
+       in order: components → slide defs → registry → app mount.
+       slide-registry.js is plain JS but loaded as babel anyway — this
+       is the simplest way to guarantee it runs AFTER the slide files
+       have populated window.Slide_*. Babel's transform is a no-op on
+       a file with no JSX.
+
+       Broadcast infra loads BEFORE deck-components so Terminal/useStg/etc
+       are on window when deck-slides-broadcast.jsx references them.
+       VSCode kit loads AFTER hooks (VSCodeMock might depend on React)
+       but BEFORE deck-slides-broadcast (Slide_Where needs VSCodeWindow). -->
+  <script type="text/babel" src="../../_shared/deck-broadcast-components.jsx"></script>
+  <script type="text/babel" src="../../_shared/deck-broadcast-hooks.jsx"></script>
+  <script type="text/babel" src="vscode/VSCodeMock.js"></script>
+  <script type="text/babel" src="vscode/Header.js"></script>
+  <script type="text/babel" src="vscode/ChatMessage.js"></script>
+  <script type="text/babel" src="vscode/Spinner.js"></script>
+  <script type="text/babel" src="vscode/InputBar.js"></script>
+  <script type="text/babel" src="../../_shared/deck-components.jsx"></script>
+  <script type="text/babel" src="deck-profile.jsx"></script>
+  <script type="text/babel" src="../../_shared/deck-slides-broadcast.jsx"></script>
+  <script type="text/babel" src="deck-slides-wrap.jsx"></script>
+  <script type="text/babel" src="../../_shared/deck-slides-101.jsx"></script>
+  <script type="text/babel" src="../../_shared/deck-layout.jsx"></script>
+  <script type="text/babel" src="../../_shared/deck-slides-201.jsx"></script>
+  <script type="text/babel" src="../../_shared/deck-slides-301.jsx"></script>
+  <script type="text/babel" src="deck-slides-accenture.jsx"></script>
+  <script>
+    // Load slide-manifest.js with a unique cache-busting query so freshly-saved
+    // speaker notes always load, even if the browser cached an older copy.
+    // (Notes are edited via the presenter view's Edit button, which writes back
+    // to this file.) Babel picks up this document.written text/babel tag the
+    // same as a static one, preserving load order.
+    document.write('<script type="text/babel" src="slide-manifest.js?v=' + Date.now() + '"><\/script>');
+  </script>
+</head>
+<body>
+  <div id="deck-root"></div>
+
+  <script>
+    // ?print-pdf → class on <html>. Must run before the scale-fit
+    // logic since print mode pins --deck-scale at 1.
+    if (location.search.indexOf('print-pdf') !== -1) {
+      document.documentElement.classList.add('print-pdf');
+    }
+
+    // --deck-scale so the 1024×768 canvas fits the viewport.
+    // Skipped in print mode — page size IS 1024×768.
+    (function () {
+      if (document.documentElement.classList.contains('print-pdf')) return;
+      var root = document.getElementById('deck-root');
+      function fit() {
+        var s = Math.min(window.innerWidth / 1024, window.innerHeight / 768);
+        root.style.setProperty('--deck-scale', s);
+      }
+      fit();
+      window.addEventListener('resize', fit);
+    })();
+  </script>
+
+  <script type="text/babel">
+    const STORAGE_KEY = 'accenture-0415-cc-workshop-slide';
+    const CONFIG_KEY = 'accenture-0415-cc-config';
+    const IS_PRINT = document.documentElement.classList.contains('print-pdf');
+
+    // ── Config ────────────────────────────────────────────────────
+    // Priority: URL params > localStorage > defaults.
+    // `level` (1=new, 2=some-experience, 3=power-user) is orthogonal to
+    // duration — it gates on audience readiness, not wall clock. A 1h
+    // power-user session skips "what is CC" and goes straight to hooks;
+    // a 3h newbie session holds back custom agents.
+    // Print-PDF reads localStorage too — "configure via panel, then ?print-pdf"
+    // should print THAT config. ?print-pdf&level=0&duration=3 still available
+    // as explicit "everything" override. Only the cold-cache default differs
+    // (print widens, interactive narrows).
+    function loadConfig() {
+      const url = new URLSearchParams(location.search);
+      // ?cfg=<base64 json> wins over everything — shareable link.
+      const packed = url.get('cfg');
+      if (packed) {
+        try { return { hiddenSlides: [], forcedSlides: [], company: {}, ...JSON.parse(atob(packed)) }; } catch {}
+      }
+      let stored = {};
+      try { stored = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}'); } catch {}
+      const urlDuration = parseFloat(url.get('duration'));
+      const urlLevel    = parseInt(url.get('level'), 10);
+      const urlPlatform = url.get('platform');
+      const defaults = IS_PRINT
+        ? { duration: 3.0, level: 0, platform: 'c4e' }   // cold print → everything
+        : { duration: 3.0, level: 0, platform: 'c4e' };
+      return {
+        duration: !isNaN(urlDuration) ? urlDuration : (stored.duration || defaults.duration),
+        level:    !isNaN(urlLevel)    ? urlLevel    : (stored.level ?? defaults.level),
+        platform: urlPlatform || stored.platform || defaults.platform,
+        hiddenSlides: stored.hiddenSlides || [],
+        forcedSlides: stored.forcedSlides || [],
+        company: stored.company || {},
+        slideOrder: stored.slideOrder || null,
+      };
+    }
+
+    // Patch DECK_PROFILE so the ColdOpen slide picks up config-driven cobrand.
+    function applyBranding(config) {
+      if (!window.DECK_PROFILE || !window.DECK_PROFILE.coldOpen) return;
+      const co = window.DECK_PROFILE.coldOpen;
+      const c = config.company || {};
+      co.cobrand = c.logo ? { src: c.logo, alt: c.name || '', height: 28 } : null;
+      if (c.name) co.subtitle = `Foundations \u2192 Scale · ${c.name}`;
+    }
+
+    // Filter the registry by config.
+    //   min  — wall-clock gate (exercises, breaks, setup-heavy demos). Default 1.
+    //   lvl  — [lo, hi] audience gate. Omit = [1,3] = everyone. level 0 bypasses.
+    //   plat — 'all' | 'c4e' | 'api' (api = any non-c4e)
+    //
+    // Split into two layers so the composer can distinguish "excluded by
+    // filter" (adjust the sliders) from "manually hidden" (check the box).
+    // forcedSlides overrides a failing filter — presenter knows better.
+    function passesFilter(s, config) {
+      if (config.duration < (s.min || 1)) return false;
+      if (config.level > 0 && s.lvl) {
+        const [lo, hi] = s.lvl;
+        if (config.level < lo || config.level > hi) return false;
+      }
+      if (s.plat === 'c4e') return config.platform === 'c4e';
+      if (s.plat === 'api') return config.platform !== 'c4e';
+      return true;
+    }
+
+    function visibleSlides(config) {
+      const hidden = new Set(config.hiddenSlides || []);
+      const forced = new Set(config.forcedSlides || []);
+      const filtered = (window.SLIDES || []).filter(s =>
+        forced.has(s.c) || (!hidden.has(s.c) && passesFilter(s, config))
+      );
+      if (!config.slideOrder || !config.slideOrder.length) return filtered;
+      const rank = Object.fromEntries(config.slideOrder.map((c, i) => [c, i]));
+      return filtered.sort((a, b) => (rank[a.c] ?? 1e9) - (rank[b.c] ?? 1e9));
+    }
+
+    // ── Presenter view ────────────────────────────────────────────
+    // Press S. Opens a new tab with prev/current/next thumbnails,
+    // speaker notes, and an elapsed timer. Deck → presenter via direct
+    // DOM writes; presenter → deck via postMessage.
+    let notesWin = null;
+    const THUMB_BASE = new URL('thumbs/', location.href).href;
+    const DECK_URL = location.pathname + location.search;
+
+    function postToMirror(msg) {
+      if (!notesWin || notesWin.closed) return;
+      const m = notesWin.document.getElementById('mirror');
+      if (m && m.contentWindow) m.contentWindow.postMessage(msg, '*');
+    }
+
+    function openNotesWindow(current, visible) {
+      if (notesWin && !notesWin.closed) { notesWin.focus(); return; }
+      notesWin = window.open('', 'cc-workshop-presenter', 'width=960,height=700');
+      if (!notesWin) return;
+
+      notesWin.document.write(`<!doctype html>
+<title>Presenter — Accenture Claude Code Workshop</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --bg:#141413; --panel:#1f1e1d; --border:rgba(255,255,255,0.08);
+    --text:#e8e6df; --dim:#8a887f; --clay:#D97757; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--text);
+    font: 400 15px/1.6 -apple-system, BlinkMacSystemFont, sans-serif;
+    display: grid; grid-template-rows: auto auto 1fr; overflow: hidden; }
+
+  #bar { display: flex; align-items: center; gap: 20px; padding: 14px 24px;
+    border-bottom: 1px solid var(--border); background: var(--panel); }
+  #slidetimer { font: 500 22px ui-monospace, Menlo, monospace; color: var(--text);
+    font-variant-numeric: tabular-nums; }
+  #slidetimer.late { color: var(--clay); }
+  #timer { font: 500 14px ui-monospace, Menlo, monospace; color: var(--dim);
+    cursor: pointer; user-select: none; font-variant-numeric: tabular-nums; }
+  #timer:hover { opacity: 0.8; }
+  #timer.late { color: var(--clay); }
+  #counter { margin-left: auto; font: 500 13px ui-monospace, monospace;
+    color: var(--dim); font-variant-numeric: tabular-nums; }
+  #hint { font-size: 11px; color: var(--dim); }
+  #timebar { height: 3px; background: rgba(255,255,255,0.06); }
+  #timebar-fill { height: 100%; width: 0%; background: rgba(255,255,255,0.35);
+    transition: width 0.3s linear, background 0.3s; }
+  #timebar-fill.late { background: var(--clay); }
+
+  #main { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+    overflow: hidden; min-height: 0; }
+
+  #stage { display: flex; flex-direction: column; gap: 16px;
+    padding: 24px; border-right: 1px solid var(--border); min-height: 0; }
+
+  /* Live mirror: the real deck in an iframe, scaled to fit. pointer-events:none
+     so keys/clicks stay on the presenter window — the iframe is display-only.
+     The wrap is the flex-growing region; the fit box is locked to 4:3 so the
+     clay border hugs the actual slide with no letterbox bars. */
+  #mirror-wrap { flex: 1; min-height: 0; display: grid; place-items: center; }
+  #mirror-fit { aspect-ratio: 4/3; max-height: 100%; max-width: 100%; height: 100%;
+    position: relative; overflow: hidden;
+    border-radius: 10px; border: 2px solid var(--clay); background: #FAF9F5; }
+  #mirror { position: absolute; top: 50%; left: 50%;
+    width: 1024px; height: 768px; border: none;
+    transform-origin: center center;
+    transform: translate(-50%, -50%) scale(var(--mirror-scale, 0.3));
+    pointer-events: none; }
+  #cur-title { font-size: 16px; font-weight: 500; text-align: center; flex-shrink: 0; }
+
+  #nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    width: 100%; max-width: 520px; flex-shrink: 0; align-self: center; }
+  .nav-thumb { background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+  .nav-thumb:hover { border-color: var(--clay); }
+  .nav-thumb.end { cursor: default; opacity: 0.3; }
+  .nav-thumb img { display: block; width: 100%; aspect-ratio: 4/3;
+    object-fit: cover; background: #FAF9F5; }
+  .nav-thumb.end img { visibility: hidden; }
+  .nav-thumb .label { padding: 6px 10px; font-size: 11px; color: var(--dim);
+    text-align: center; border-top: 1px solid var(--border); }
+
+  #notes-col { display: flex; flex-direction: column; padding: 24px 28px; min-height: 0; }
+  #notes-head { display: flex; align-items: center; gap: 12px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--dim); padding-bottom: 12px;
+    margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  #edit-btn { margin-left: auto; font: 600 11px/1 inherit; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--text); background: var(--panel);
+    border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px;
+    cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+  #edit-btn:hover { border-color: var(--clay); color: var(--clay); }
+  #notes { flex: 1; overflow-y: auto; font-size: 18px; line-height: 1.7;
+    white-space: pre-wrap; padding-right: 8px; }
+  #notes.empty { color: var(--dim); font-style: italic; font-size: 14px; }
+  #notes::-webkit-scrollbar { width: 6px; }
+  #notes::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  /* Speaker-note editor — fills the notes area when Edit is pressed. */
+  #editor { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  #editor[hidden] { display: none; }
+  #editor-text { flex: 1; min-height: 0; resize: none; width: 100%;
+    background: #181716; color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+    font: 400 15px/1.6 ui-monospace, Menlo, monospace; }
+  #editor-text:focus { outline: none; border-color: var(--clay); }
+  #editor-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  #editor-status { font-size: 12px; color: var(--dim); margin-right: auto; }
+  #editor-status.ok { color: #6bbf6b; }
+  #editor-status.err { color: var(--clay); }
+  #editor-hint { font-size: 11px; color: var(--dim); }
+  .ed-btn { font: 600 12px/1 inherit; border-radius: 6px; padding: 8px 16px;
+    cursor: pointer; border: 1px solid var(--border); background: var(--panel);
+    color: var(--text); }
+  .ed-btn:hover { border-color: var(--clay); }
+  .ed-btn.primary { background: var(--clay); border-color: var(--clay); color: #1a0f0a; }
+  .ed-btn.primary:hover { filter: brightness(1.08); }
+</style>
+<div id="bar">
+  <span id="slidetimer">0:00</span>
+  <span id="timer">00:00</span>
+  <span id="hint">click timer to reset · ← → to navigate</span>
+  <span id="counter"></span>
+</div>
+<div id="timebar"><div id="timebar-fill"></div></div>
+<div id="main">
+  <div id="stage">
+    <div id="mirror-wrap">
+      <div id="mirror-fit">
+        <iframe id="mirror" src="${DECK_URL}"></iframe>
+      </div>
+    </div>
+    <div id="cur-title"></div>
+    <div id="nav-row">
+      <div class="nav-thumb" id="prev-thumb"><img alt=""><div class="label">← PREV</div></div>
+      <div class="nav-thumb" id="next-thumb"><img alt=""><div class="label">NEXT →</div></div>
+    </div>
+  </div>
+  <div id="notes-col">
+    <div id="notes-head"><span>Speaker Notes</span>
+      <button id="edit-btn" type="button">&#9998; Edit</button></div>
+    <div id="notes"></div>
+    <div id="editor" hidden>
+      <textarea id="editor-text" spellcheck="true"></textarea>
+      <div id="editor-actions">
+        <span id="editor-status"></span>
+        <span id="editor-hint">&#8984;/Ctrl+Enter saves &middot; Esc cancels</span>
+        <button id="editor-cancel" class="ed-btn" type="button">Cancel</button>
+        <button id="editor-save" class="ed-btn primary" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+</div>`);
+      notesWin.document.close();
+
+      const nd = notesWin.document;
+      // Post ONLY to the main deck. Main is authoritative — it forwards the
+      // confirmed result to the mirror (presenterSubNav for substeps,
+      // presenterGoto for slide index via syncNotesWindow). Dual-posting
+      // raced: presenterGoto could land in the mirror before speakerNav,
+      // and the stale speakerNav would then advance a substep on the NEW
+      // slide. ColdOpen/WhatIsLoop desynced one click out of three.
+      const nav = (d, skipSteps) => {
+        window.postMessage({ speakerNav: d, skipSteps }, '*');
+      };
+      // Thumbnails show the adjacent SLIDE, so clicking jumps past substeps.
+      nd.getElementById('prev-thumb').onclick = () => nav(-1, true);
+      nd.getElementById('next-thumb').onclick = () => nav(+1, true);
+      // Arrow keys mirror the native deck keyboard — step through substeps.
+      nd.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nav(+1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); nav(-1); }
+      });
+
+      // ── Speaker-note editor ───────────────────────────────────────
+      // Edit writes straight back into slide-manifest.js via serve.py's
+      // POST /api/save-note. Edits also update the in-memory slide object
+      // so the change shows immediately without a reload.
+      const SAVE_URL = location.origin + '/api/save-note';
+      const MANIFEST_PATH = location.pathname.replace(/[^/]+$/, '') + 'slide-manifest.js';
+      const $editBtn = nd.getElementById('edit-btn');
+      const $editor = nd.getElementById('editor');
+      const $editorText = nd.getElementById('editor-text');
+      const $editorStatus = nd.getElementById('editor-status');
+      const $notesEl = nd.getElementById('notes');
+
+      const curSlide = () => {
+        const v = notesWin.__lastVisible || visible;
+        const i = notesWin.__lastIdx ?? current;
+        return v && v[i];
+      };
+      const openEditor = () => {
+        const cur = curSlide();
+        if (!cur) return;
+        notesWin.__editingC = cur.c;
+        $editorText.value = cur.notes || '';
+        $editorStatus.textContent = ''; $editorStatus.className = '';
+        $notesEl.hidden = true; $editor.hidden = false;
+        $editorText.focus();
+      };
+      const closeEditor = () => {
+        notesWin.__editingC = null;
+        $editor.hidden = true; $notesEl.hidden = false;
+      };
+      $editBtn.onclick = openEditor;
+      nd.getElementById('editor-cancel').onclick = closeEditor;
+      nd.getElementById('editor-save').onclick = async () => {
+        const cur = curSlide();
+        if (!cur) return;
+        const newNotes = $editorText.value;
+        $editorStatus.className = ''; $editorStatus.textContent = 'Saving…';
+        try {
+          const res = await fetch(SAVE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ c: cur.c, notes: newNotes, manifest: MANIFEST_PATH })
+          });
+          if (!res.ok) {
+            let msg = 'HTTP ' + res.status;
+            try { msg = (await res.json()).error || msg; } catch (e) {}
+            throw new Error(msg);
+          }
+          cur.notes = newNotes;                 // live update — no reload needed
+          $notesEl.textContent = newNotes || 'No notes for this slide.';
+          $notesEl.className = newNotes ? '' : 'empty';
+          $editorStatus.className = 'ok'; $editorStatus.textContent = 'Saved ✓';
+          setTimeout(() => { if (!notesWin.closed) closeEditor(); }, 700);
+        } catch (err) {
+          const hint = /Failed to fetch|NetworkError/.test(err.message)
+            ? ' — is serve.py running? (not plain http.server)' : '';
+          $editorStatus.className = 'err';
+          $editorStatus.textContent = 'Save failed: ' + err.message + hint;
+        }
+      };
+      // Keep keystrokes in the textarea: stop space/arrows from driving the
+      // deck, and wire ⌘/Ctrl+Enter to save, Esc to cancel.
+      $editorText.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          e.preventDefault(); nd.getElementById('editor-save').click();
+        } else if (e.key === 'Escape') {
+          e.preventDefault(); closeEditor();
+        }
+      });
+
+      // Scale the 1024×768 iframe to fit its container.
+      const $fit = nd.getElementById('mirror-fit');
+      const refit = () => {
+        const s = Math.min($fit.clientWidth / 1024, $fit.clientHeight / 768);
+        $fit.style.setProperty('--mirror-scale', s.toFixed(4));
+      };
+      new notesWin.ResizeObserver(refit).observe($fit);
+      refit();
+
+      // First sync can fire before the iframe's deck mounts its message
+      // listener — re-push once it finishes loading.
+      nd.getElementById('mirror').addEventListener('load', () => {
+        notesWin.__mirrorReady = true;
+        syncNotesWindow(notesWin.__lastIdx ?? current, notesWin.__lastVisible || visible);
+      });
+
+      // Timers. Global tracks whole-deck elapsed vs config.duration (pace
+      // bar). Per-slide resets on every nav — answers "am I lingering here"
+      // independent of global pace. Both redden when over budget. Click
+      // global to reset everything (for re-runs or false starts).
+      notesWin.__t0 = Date.now();
+      notesWin.__slideT0 = Date.now();
+      notesWin.__durationSec = Infinity;   // set by syncNotesWindow from config
+      notesWin.__slideBudgetSec = Infinity;
+      const $timer = nd.getElementById('timer');
+      const $slide = nd.getElementById('slidetimer');
+      const $bar = nd.getElementById('timebar-fill');
+      $timer.onclick = () => { notesWin.__t0 = notesWin.__slideT0 = Date.now(); };
+      notesWin.__tick = setInterval(() => {
+        if (notesWin.closed) return clearInterval(notesWin.__tick);
+        const g = Math.floor((Date.now() - notesWin.__t0) / 1000);
+        const gLate = g > notesWin.__durationSec;
+        $timer.textContent =
+          String(Math.floor(g / 60)).padStart(2, '0') + ':' + String(g % 60).padStart(2, '0');
+        $timer.className = gLate ? 'late' : '';
+        const pct = isFinite(notesWin.__durationSec)
+          ? Math.min(100, g / notesWin.__durationSec * 100) : 0;
+        $bar.style.width = pct + '%';
+        $bar.className = gLate ? 'late' : '';
+        const sl = Math.floor((Date.now() - notesWin.__slideT0) / 1000);
+        $slide.textContent = Math.floor(sl / 60) + ':' + String(sl % 60).padStart(2, '0');
+        $slide.className = sl > notesWin.__slideBudgetSec ? 'late' : '';
+      }, 1000);
+
+      syncNotesWindow(current, visible);
+    }
+
+    function syncNotesWindow(idx, visible, durationHours) {
+      if (!notesWin || notesWin.closed) return;
+      notesWin.__lastIdx = idx;
+      notesWin.__lastVisible = visible;
+      // Reset per-slide clock on every nav. Budget = even split of the
+      // configured duration — crude, but the registry has no per-slide
+      // mins. Good enough to flag lingering.
+      notesWin.__slideT0 = Date.now();
+      if (durationHours != null) notesWin.__durationSec = durationHours * 3600;
+      const total = visible.length;
+      notesWin.__slideBudgetSec = total > 0 && isFinite(notesWin.__durationSec)
+        ? notesWin.__durationSec / total : Infinity;
+      const d = notesWin.document;
+      const cur = visible[idx], prev = visible[idx - 1], next = visible[idx + 1];
+      // If the slide changed while the editor was open, discard the edit so it
+      // can't be saved onto the wrong slide.
+      if (notesWin.__editingC && (!cur || cur.c !== notesWin.__editingC)) {
+        const ed = d.getElementById('editor'), nt = d.getElementById('notes');
+        if (ed) ed.hidden = true;
+        if (nt) nt.hidden = false;
+        notesWin.__editingC = null;
+      }
+      const title = (s) => s ? s.c.replace(/^Slide_/, '').replace(/([a-z])([A-Z])/g, '$1 $2') : '';
+
+      d.getElementById('counter').textContent = `${idx + 1} / ${total}`;
+      d.getElementById('cur-title').textContent = title(cur);
+      const mirror = d.getElementById('mirror');
+      if (mirror && mirror.contentWindow) {
+        mirror.contentWindow.postMessage({ presenterGoto: idx }, '*');
+      }
+
+      const setNav = (id, s) => {
+        const el = d.getElementById(id);
+        el.classList.toggle('end', !s);
+        el.querySelector('img').src = s ? THUMB_BASE + s.c + '.png' : '';
+        el.querySelector('.label').textContent =
+          (id === 'prev-thumb' ? '← ' : '') + (s ? title(s) : (id === 'prev-thumb' ? 'START' : 'END'))
+          + (id === 'next-thumb' ? ' →' : '');
+      };
+      setNav('prev-thumb', prev);
+      setNav('next-thumb', next);
+
+      const $n = d.getElementById('notes');
+      const note = cur ? cur.notes : '';
+      $n.textContent = note || 'No notes for this slide.';
+      $n.className = note ? '' : 'empty';
+    }
+
+    // ── App ───────────────────────────────────────────────────────
+    function App() {
+      const [config, setConfigState] = React.useState(() => {
+        const c = loadConfig();
+        applyBranding(c);
+        return c;
+      });
+      const [showConfig, setShowConfig] = React.useState(false);
+      const visible = React.useMemo(() => visibleSlides(config), [config]);
+
+      const [current, setCurrent] = React.useState(() => initSlideFromHash(STORAGE_KEY));
+      const [prev, setPrev] = React.useState(null);
+      const [showNav, setShowNav] = React.useState(true);
+      const navTimer = React.useRef(null);
+      const total = visible.length;
+
+      // Clamp current if config change shrank the visible set.
+      // Effect so it survives the render that reads the new `visible`.
+      React.useEffect(() => {
+        if (current >= total && total > 0) setCurrent(0);
+      }, [total, current]);
+
+      const setConfig = (next) => {
+        applyBranding(next);
+        // Track position by slide name so reorder/hide keeps us on (or near)
+        // the slide we were looking at, rather than snapping to 0.
+        const wasOn = visible[current] && visible[current].c;
+        const nextVisible = visibleSlides(next);
+        setConfigState(next);
+        try { localStorage.setItem(CONFIG_KEY, JSON.stringify(next)); } catch {}
+        if (!nextVisible.length) return;
+        let idx = nextVisible.findIndex(s => s.c === wasOn);
+        if (idx < 0) {
+          // Current slide was removed — land on its predecessor in the old
+          // list that survives, else the first survivor after it.
+          for (let i = current - 1; i >= 0 && idx < 0; i--)
+            idx = nextVisible.findIndex(s => s.c === visible[i].c);
+          for (let i = current + 1; i < visible.length && idx < 0; i++)
+            idx = nextVisible.findIndex(s => s.c === visible[i].c);
+          if (idx < 0) idx = 0;
+        }
+        setCurrent(idx);
+      };
+
+      // Persist index + push to notes popup on slide change.
+      React.useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, current);
+        syncSlideToHash(current);
+        window.postMessage({ slideIndexChanged: current }, '*');
+        syncNotesWindow(current, visible, config.duration);
+      }, [current, visible, config.duration]);
+
+      React.useEffect(() => {
+        window.postMessage({ slideIndexChanged: current }, '*');
+      }, []);
+
+      const goTo = React.useCallback((idx) => {
+        if (idx < 0 || idx >= total || idx === current) return;
+        setPrev(current);
+        setCurrent(idx);
+        setTimeout(() => setPrev(null), 500);
+      }, [current, total]);
+
+      const next = React.useCallback(() => goTo(current + 1), [current, goTo]);
+      const back = React.useCallback(() => goTo(current - 1), [current, goTo]);
+
+      // ── Substep navigation — slides intercept arrow keys ──────
+      // ColdOpen/Boris/Where/RecapEx/Rookie register a handler via
+      // useSubSteps; it returns true to consume (step within slide)
+      // or false to yield (advance slide). Only the active slide
+      // gets a non-null registerSubNav so one handler is ever live.
+      const subNavRef = React.useRef(null);
+      const registerSubNav = React.useCallback((fn) => {
+        subNavRef.current = fn;
+        return () => { if (subNavRef.current === fn) subNavRef.current = null; };
+      }, []);
+
+      // Notes window → deck nav via postMessage.
+      const currentRef = React.useRef(current);
+      currentRef.current = current;
+      const visibleRef = React.useRef(visible);
+      visibleRef.current = visible;
+      React.useEffect(() => {
+        const onMsg = (e) => {
+          if (!e.data) return;
+          if (typeof e.data.speakerNav === 'number') {
+            // Same path as the native arrow key — let the active slide
+            // consume the delta as a substep before we advance the index.
+            // skipSteps (thumbnail click) jumps straight to the adjacent slide.
+            const d = e.data.speakerNav;
+            if (!e.data.skipSteps && subNavRef.current && subNavRef.current(d)) {
+              postToMirror({ presenterSubNav: d });
+              return;
+            }
+            goTo(currentRef.current + d);
+            // slide-index change → syncNotesWindow will push presenterGoto
+          } else if (typeof e.data.presenterGoto === 'number') {
+            // Absolute jump — main deck drives the mirror iframe directly.
+            goTo(e.data.presenterGoto);
+          } else if (typeof e.data.presenterSubNav === 'number') {
+            // Mirror-only: main deck confirmed a substep, replay it here.
+            // No forwarding — this IS the mirror.
+            if (subNavRef.current) subNavRef.current(e.data.presenterSubNav);
+          }
+        };
+        window.addEventListener('message', onMsg);
+        return () => window.removeEventListener('message', onMsg);
+      }, [goTo]);
+
+      // Keyboard: ← → Space for nav, S for notes, C for config.
+      // Config panel swallows arrows so the duration slider is usable.
+      React.useEffect(() => {
+        const handler = (e) => {
+          // Let form controls inside the config panel handle their own keys.
+          const tag = (e.target && e.target.tagName) || '';
+          if (tag === 'INPUT' || tag === 'SELECT') return;
+
+          if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            if (subNavRef.current && subNavRef.current(1)) { postToMirror({ presenterSubNav: 1 }); return; }
+            next(); setShowNav(false);
+          }
+          else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            if (subNavRef.current && subNavRef.current(-1)) { postToMirror({ presenterSubNav: -1 }); return; }
+            back(); setShowNav(false);
+          }
+          else if (e.key === 's' || e.key === 'S') { e.preventDefault(); openNotesWindow(currentRef.current, visibleRef.current); }
+          else if (e.key === 'c' || e.key === 'C') { e.preventDefault(); setShowConfig(v => !v); }
+          else if (e.key === 'Escape') { setShowConfig(false); }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+      }, [next, back]);
+
+      // Show nav on mouse move.
+      React.useEffect(() => {
+        const handler = () => {
+          setShowNav(true);
+          clearTimeout(navTimer.current);
+          navTimer.current = setTimeout(() => setShowNav(false), 3000);
+        };
+        window.addEventListener('mousemove', handler);
+        return () => { window.removeEventListener('mousemove', handler); clearTimeout(navTimer.current); };
+      }, []);
+
+      // Render. Resolve component via window[entry.c] — the registry
+      // stores string names so load order between slide files and
+      // the registry doesn't matter. Agenda/Recap get visibleSlides
+      // + config as props; other slides ignore them.
+      // The openConfig prop is consumed only by Slide_Title.
+      const openConfig = React.useCallback(() => setShowConfig(true), []);
+
+      return (
+        <PlatformContext.Provider value={config.platform}>
+          {visible.map((entry, i) => {
+            const Comp = window[entry.c];
+            if (!Comp) {
+              // Soft fail: placeholder so the deck doesn't crash if a
+              // slide name is typo'd in the registry.
+              return (
+                <div key={entry.c} className={`slide-wrapper ${i === current ? 'active' : ''}`}>
+                  <Slide bg="#400" color="#fff" center>
+                    <div style={{ fontFamily: 'monospace' }}>Missing slide: {entry.c}</div>
+                  </Slide>
+                </div>
+              );
+            }
+            const isActive = i === current;
+            const isExiting = i === prev;
+            return (
+              <div
+                key={entry.c}
+                data-c={entry.c}
+                className={`slide-wrapper ${isActive ? 'active' : ''} ${isExiting ? 'exiting' : ''}`}
+              >
+                <Comp visibleSlides={visible} config={config} openConfig={openConfig}
+                      active={isActive || IS_PRINT} registerSubNav={isActive ? registerSubNav : null} />
+              </div>
+            );
+          })}
+
+          <div className="progress-bar" style={{ width: `${((current + 1) / total) * 100}%` }} />
+          <div className={`nav-controls ${showNav ? '' : 'hidden'}`} data-noncommentable>
+            <button className="nav-btn" onClick={back} disabled={current === 0} data-noncommentable>
+              <i className="ai-CaretLeft"></i>
+            </button>
+            <span className="slide-counter">{current + 1} / {total}</span>
+            <button className="nav-btn" onClick={next} disabled={current === total - 1} data-noncommentable>
+              <i className="ai-CaretRight"></i>
+            </button>
+          </div>
+
+          {showConfig && (
+            <ConfigPanel
+              config={config}
+              setConfig={setConfig}
+              visibleSlides={visible}
+              allSlides={window.SLIDES || []}
+              passesFilter={s => passesFilter(s, config)}
+              thumbPath="thumbs"
+              onJump={(c) => {
+                const idx = visible.findIndex(s => s.c === c);
+                if (idx >= 0) goTo(idx);
+              }}
+              onClose={() => setShowConfig(false)}
+            />
+          )}
+        </PlatformContext.Provider>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('deck-root')).render(<App />);
+  </script>
+</body>
+</html>

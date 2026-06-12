@@ -1,0 +1,9 @@
+{
+  "name": "order-toolkit",
+  "version": "1.0.0",
+  "description": "Order-service workflow skills: tier triage and SLA lookup for B2B order processing.",
+  "author": {
+    "name": "Austin Chang",
+    "email": "austin.chang@accenture.com"
+  }
+}

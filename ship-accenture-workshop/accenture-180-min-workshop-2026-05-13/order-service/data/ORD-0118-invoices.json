@@ -1,0 +1,36 @@
+{
+  "orderId": "ORD-0118",
+  "customer": "Wayne Systems",
+  "product": "Platform Pro — Monthly",
+  "cycleStart": "2026-02-01T00:00:00.000Z",
+  "cancelledAt": "2026-02-19T00:00:00.312Z",
+  "referenceAmount": 2700.00,
+  "invoices": [
+    {
+      "invoiceId": "INV-0118-001",
+      "date": "2026-02-07T00:00:00.000Z",
+      "description": "Platform Pro — weekly partial (days 1-7)",
+      "amount": 1050.00
+    },
+    {
+      "invoiceId": "INV-0118-002",
+      "date": "2026-02-14T00:00:00.000Z",
+      "description": "Platform Pro — weekly partial (days 8-14)",
+      "amount": 1050.00
+    },
+    {
+      "invoiceId": "INV-0118-003",
+      "date": "2026-02-19T00:00:00.000Z",
+      "description": "Platform Pro — final partial (days 15-18)",
+      "amount": 700.00
+    },
+    {
+      "invoiceId": "INV-0118-ADJ-001",
+      "date": "2026-04-15T00:00:00.000Z",
+      "description": "Reconciliation adjustment — drift correction",
+      "amount": -100.00
+    }
+  ],
+  "notes": "Order cancelled mid-cycle. Expected prorate: 18 days of 30 at $4500/mo = $2700. Invoiced total shows drift from weekly billing granularity.",
+  "dataAsOf": "2026-02-20T02:00:00.000Z"
+}

@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash ./reset-demo.sh)",
+      "Bash(mkdir -p .reset-snapshots)",
+      "Bash(cp data/ORD-0042-invoices.json .reset-snapshots/ORD-0042-invoices.json)",
+      "Bash(node --input-type=module)",
+      "Bash(bash reset-demo.sh)",
+      "Bash(bash reset-demo.sh --presenter)",
+      "Skill(update-config)",
+      "Bash(exit 2)",
+      "Bash(exit 0)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const f=JSON.parse\\(d\\).tool_input.file_path||'';if\\(f.includes\\('data/'\\)\\){process.stderr.write\\('BLOCKED: direct edits to data/ files are not allowed. Invoice records are source-of-truth \\\\u2014 use lib/reconciliation.js instead.\\\\n'\\);process.exit\\(2\\);}else process.exit\\(0\\);}\\)\")",
+      "Bash(node *)",
+      "Read(//c/Users/austin.chang/.claude/**)",
+      "Bash(python3 -m json.tool)",
+      "Bash(claude mcp *)",
+      "Bash(./reset-demo.sh)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "order-store"
+  ]
+}

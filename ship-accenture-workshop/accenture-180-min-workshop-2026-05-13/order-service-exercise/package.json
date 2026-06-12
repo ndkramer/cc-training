@@ -1,0 +1,9 @@
+{
+  "name": "order-service-exercise",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "reset-demo": "node scripts/reset.js"
+  }
+}

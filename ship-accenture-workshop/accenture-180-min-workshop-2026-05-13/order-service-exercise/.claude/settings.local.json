@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude plugin *)",
+      "Bash(claude *)",
+      "Bash(wsl --status)",
+      "Read(//c/Users/austin.chang/Documents/Anthropic Claude Resources/claude-code-accenture-enablement/claude-code-accenture-enablement/**)",
+      "Bash(rsync -a --delete \"Accenture 180 Min Workshop 2026-04-15/\" \"dist/accenture-180-min-workshop-2026-04-15/\")",
+      "Bash(bash reset-demo.sh)",
+      "Bash(chmod +x *)",
+      "Bash(rsync *)"
+    ]
+  }
+}

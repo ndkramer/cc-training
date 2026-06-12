@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code Workshop</title>
+  <style>
+    @font-face {
+      font-family: 'Anthropic Sans';
+      src: url('accenture-180-min-workshop-2026-05-13/assets/fonts/AnthropicSans-Roman-Web.woff2') format('woff2');
+      font-weight: 100 900;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Anthropic Sans', -apple-system, sans-serif;
+      background: #FAF9F5; color: #141413; line-height: 1.6;
+      padding: 56px 48px; max-width: 960px; margin: 0 auto; min-height: 100vh;
+    }
+    .header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+    .header > img { width: 32px; height: 32px; }
+    .header h1 { font-size: 32px; font-weight: 500; letter-spacing: -0.01em; }
+    .header-sub { font-size: 14px; color: #73726C; margin-bottom: 28px; }
+    .links { display: flex; gap: 10px; margin-bottom: 32px; }
+    .link-btn {
+      font-size: 13px; color: #D97757; text-decoration: none;
+      padding: 8px 14px; border: 1px solid rgba(217,151,87,0.3);
+      border-radius: 6px; white-space: nowrap;
+    }
+    .project-list { list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .project-card {
+      display: flex; flex-direction: column; height: 100%;
+      padding: 20px 22px; background: #fff;
+      border: 1px solid rgba(31,30,29,0.08); border-radius: 12px;
+      text-decoration: none; color: inherit;
+      transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+    }
+    .project-card:hover {
+      border-color: #D97757; transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(20,20,19,0.06);
+    }
+    .project-title {
+      font-size: 17px; font-weight: 600; margin-bottom: 6px;
+      display: flex; align-items: baseline; gap: 6px;
+    }
+    .project-title::after {
+      content: '92'; color: #D97757; font-weight: 400;
+      opacity: 0; transition: opacity 0.15s, transform 0.15s;
+    }
+    .project-card:hover .project-title::after { opacity: 1; transform: translateX(2px); }
+    .project-meta { font-size: 12.5px; color: #73726C; line-height: 1.5; }
+    @media (max-width: 640px) {
+      body { padding: 40px 24px; }
+      .project-list { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <img src="accenture-180-min-workshop-2026-05-13/assets/clay-spark.svg" alt="">
+  <h1>Claude Code Workshop</h1>
+</div>
+<p class="header-sub">Delivered by Accenture &middot; Powered by Anthropic</p>
+<div class="links">
+  <a href="_shared/syllabus.html" class="link-btn">Syllabus &#x2192;</a>
+</div>
+<ul class="project-list">
+  <li>
+    <a href="how-to-use-this-project/" class="project-card">
+      <div class="project-title">How to use this project</div>
+      <div class="project-meta">Facilitator guide &mdash; setup, demo walkthrough, reset between sessions, keyboard shortcuts.</div>
+    </a>
+  </li>
+  <li>
+    <a href="accenture-180-min-workshop-2026-05-13/" class="project-card">
+      <div class="project-title">Accenture &middot; 180 Min &middot; 2026-05-13</div>
+      <div class="project-meta">mixed &middot; c4e &middot; order-service demo &middot; 78 slides &middot; ~134.5 min</div>
+    </a>
+  </li>
+</ul>
+</body>
+</html>

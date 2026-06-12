@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- PLACEHOLDER: replace with brand-approved Accenture wordmark (white text, dark bg).
+     viewBox bottom edge = text baseline ("accenture" has no descenders) so the
+     <img> can sit on vertical-align:baseline and line up with surrounding text. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 152 38">
+  <polygon points="100,0 118,7 100,14 100,10 110,7 100,4" fill="#A100FF"/>
+  <text x="0" y="38" font-family="'Anthropic Sans', Helvetica, Arial, sans-serif"
+        font-size="30" font-weight="500" letter-spacing="-0.5"
+        fill="#ffffff">accenture</text>
+</svg>

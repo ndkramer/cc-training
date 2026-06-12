@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Syllabus — Claude Code Workshops</title>
+  <style>
+    /* Style mirrors deck demo-scripts.html — keep them visually paired. Fonts
+       reach into the Generic deck because _shared/ ships none of its own. */
+    @font-face {
+      font-family: 'Anthropic Sans';
+      src: url('../generic-claude-code-workshop/assets/fonts/AnthropicSans-Roman-Web.woff2') format('woff2');
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('../generic-claude-code-workshop/assets/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+      font-weight: 400;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Anthropic Sans', -apple-system, sans-serif;
+      background: #FAF9F5;
+      color: #141413;
+      line-height: 1.6;
+      padding: 48px;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .header img { width: 28px; height: 28px; }
+    .header h1 { font-size: 28px; font-weight: 500; }
+    .header-sub { font-size: 14px; color: #73726C; margin-bottom: 36px; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: #D97757; text-decoration: none;
+      margin-bottom: 24px; font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    .toc {
+      position: sticky; top: 0; z-index: 10;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px; margin-bottom: 48px; padding: 18px 20px;
+      background: #fff; border: 1px solid rgba(31,30,29,0.08);
+      border-radius: 10px; font-size: 13px;
+      box-shadow: 0 1px 3px rgba(31,30,29,0.04);
+    }
+    .toc a { color: #3D3D3A; text-decoration: none; }
+    .toc a:hover { color: #D97757; }
+    .toc-num { color: #D97757; font-weight: 600; margin-right: 6px; }
+
+    .setup-section { margin-bottom: 48px; border-left: 3px solid #73726C; padding-left: 28px; }
+    .setup-label {
+      font-size: 11px; font-weight: 600; color: #73726C;
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;
+    }
+    .setup-title { font-size: 22px; font-weight: 600; margin-bottom: 14px; }
+
+    .demo-section { margin-bottom: 56px; border-left: 3px solid #D97757; padding-left: 28px; }
+    .demo-label {
+      font-size: 11px; font-weight: 600; color: #D97757;
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;
+    }
+    .demo-title { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+    .demo-meta { font-size: 13px; color: #73726C; margin-bottom: 20px; }
+
+    .demo-goal {
+      background: #fff; border: 1px solid rgba(31,30,29,0.08);
+      border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+    }
+    .demo-goal strong { font-weight: 600; }
+    .demo-goal p { font-size: 14px; color: #3D3D3A; margin-top: 4px; }
+
+    h3.block-label {
+      font-size: 13px; font-weight: 600; color: #73726C;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 10px; margin-top: 22px;
+    }
+    h3.block-label:first-of-type { margin-top: 0; }
+
+    .checklist { list-style: none; padding: 0; margin-bottom: 20px; }
+    .checklist li {
+      position: relative;
+      padding: 6px 0 6px 22px;
+      font-size: 13.5px; line-height: 1.6;
+    }
+    .checklist li::before {
+      content: '☐'; color: #D97757;
+      position: absolute; left: 0; top: 6px;
+    }
+
+    .topic-list { list-style: none; padding: 0; margin-bottom: 20px; }
+    .topic-list li {
+      padding: 5px 0; font-size: 13.5px;
+      display: flex; gap: 10px; align-items: baseline;
+    }
+    .topic-list li::before { content: '●'; color: #D97757; font-size: 8px; flex-shrink: 0; }
+    .topic-list .desc { color: #73726C; font-size: 12.5px; }
+
+    .tip-box {
+      margin-top: 14px; padding: 12px 16px;
+      background: #D9775708; border-radius: 8px;
+      border-left: 3px solid #D97757;
+      font-size: 13px; color: #3D3D3A;
+    }
+    .tip-box strong { font-weight: 600; color: #D97757; }
+
+    code.inline {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      background: #f0efe8; padding: 1px 6px; border-radius: 4px;
+    }
+
+    .divider { height: 1px; background: rgba(31,30,29,0.08); margin: 16px 0 20px; }
+  </style>
+</head>
+<body>
+
+<a href="../" class="back-link">← Back to workshops</a>
+
+<div class="header">
+  <img src="../generic-claude-code-workshop/assets/clay-spark.svg" alt="">
+  <h1>Workshop Syllabus</h1>
+</div>
+<p class="header-sub">What to teach, in what order, and how to deliver it. Two tracks share a 201 spine — pick the one that matches the room. Then let <code class="inline">/ncp</code> assemble the slides for you.</p>
+
+<nav class="toc">
+  <a href="#philosophy"><span class="toc-num">⚑</span>Presentation philosophy</a>
+  <a href="#intro"><span class="toc-num">A</span>Intro track — 101 → 201</a>
+  <a href="#advanced"><span class="toc-num">B</span>Advanced track — 201 → 301</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PHILOSOPHY -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="setup-section" id="philosophy">
+  <div class="setup-label">Read this first</div>
+  <div class="setup-title">Presentation philosophy</div>
+
+  <ul class="checklist">
+    <li><strong>Demo often.</strong> 3–5 live demos, every time — even a 1-hour 101. Sprinkled throughout, not bolted on at the end. The audience's belief tracks what they <em>see working</em>, not what you assert on a slide.</li>
+    <li><strong>Tailor to the customer.</strong> A bug in <code class="inline">portfolio-service</code> lands with finance engineers in a way the generic feature-flag service never will. Domain alignment isn't cosmetic — it's the credibility beat. <code class="inline">/ncp</code> generates a vehicle in their domain for exactly this reason.</li>
+    <li><strong>Same arc, customer-tuned.</strong> Every deck follows the same 101 → 201 → 301 spine. What changes is the demo vehicle, the planted bug, the CLAUDE.md, and the cobrand. Consistency across the field; relevance in the room.</li>
+    <li><strong>Patterns, not rules.</strong> There is no one right way to use Claude Code. CLAUDE.md, plan mode, skills — these are patterns. Tell the room to steal what's useful and ignore what isn't.</li>
+    <li><strong>Show the failure first.</strong> Open with the failing test (Cold Open, Demo 1). Watching Claude find and fix a real bug in 90 seconds is the hook — everything after is "here's how to make that repeatable for you."</li>
+    <li><strong>Match the room.</strong> New-to-CC audiences get 101 + light 201. Power users skip straight to 201 + 301. Mixed rooms get the Intro track with one 301 teaser (usually Agent Teams). <code class="inline">/ncp</code> asks for audience and picks accordingly.</li>
+    <li><strong>Smoke-test before you present.</strong> <code class="inline">npm test</code> shows exactly 1 failure, terminal font ≥ 18pt, notifications off, a warmed-up <code class="inline">claude</code> session in a second tab. Preflight is in every deck's <code class="inline">demo-scripts.html</code>.</li>
+  </ul>
+
+  <div class="tip-box">
+    <strong>Time budget:</strong> ~40% slides, ~35% live demos, ~25% hands-on exercises (when length allows). If you're cutting for time, cut slides — never demos.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- INTRO TRACK -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="intro">
+  <div class="demo-label">Track A</div>
+  <div class="demo-title">Intro — 101 → 201</div>
+  <div class="demo-meta">Audience: new to Claude Code, or mixed · 60–90 min · 3–4 demos, 1–2 exercises</div>
+
+  <div class="demo-goal">
+    <strong>Walk-out outcome</strong>
+    <p>Everyone has installed Claude Code, fixed a real bug in the demo repo, written a CLAUDE.md, and run plan mode. They understand the agent loop and know which model to pick.</p>
+  </div>
+
+  <h3 class="block-label">101 — Foundations</h3>
+  <ul class="topic-list">
+    <li><span>What is Claude Code</span> <span class="desc">— agent in your terminal; reads, edits, runs</span></li>
+    <li><span>The agent loop</span> <span class="desc">— Read → Decide → Act → Observe</span></li>
+    <li><span>Install &amp; auth</span> <span class="desc">— one curl, platform-switched</span></li>
+    <li><span>Models</span> <span class="desc">— Opus / Sonnet / Haiku; which model when</span></li>
+    <li><span>The core loop</span> <span class="desc">— prompt → read → plan → edit → review → loop</span></li>
+    <li><span>Feature ladder</span> <span class="desc">— 7-rung maturity, chat → agent teams</span></li>
+    <li><span>Where it runs</span> <span class="desc">— CLI, IDE, Web, everywhere</span></li>
+    <li><span>How Anthropic uses it</span> <span class="desc">— credibility beat; cross-org value beyond engineering</span></li>
+    <li><span>No one right way</span> <span class="desc">— patterns not rules</span></li>
+    <li><span>Rookie moves</span> <span class="desc">— 6 things even experienced users get wrong</span></li>
+    <li><span><strong>Demo 1 — Fix the test</strong></span> <span class="desc">— cold loop; find and fix the failing test</span></li>
+    <li><span><strong>Exercise 1 — Reproduce &amp; fix</strong></span> <span class="desc">— hands-on; clone, find the bug, fix it</span></li>
+  </ul>
+
+  <h3 class="block-label">201 — Teach Claude your repo</h3>
+  <ul class="topic-list">
+    <li><span>Context is everything</span> <span class="desc">— output quality = context quality</span></li>
+    <li><span>CLAUDE.md</span> <span class="desc">— the README for the AI; under 200 lines; nesting across home/repo/subdir</span></li>
+    <li><span>Plan mode</span> <span class="desc">— Shift-Tab twice; read-only, propose, zero edits until approved</span></li>
+    <li><span>Input primitives</span> <span class="desc">— <code class="inline">!</code> bash mode, <code class="inline">@</code> file mentions, screenshots, slash commands</span></li>
+    <li><span>Spec-driven &amp; TDD</span> <span class="desc">— define-success-first; red → green → refactor</span></li>
+    <li><span>Skills</span> <span class="desc">— domain expertise, codified; markdown → slash command; SKILL.md anatomy</span></li>
+    <li><span>Context management</span> <span class="desc">— <code class="inline">/context</code>, <code class="inline">/compact</code>, <code class="inline">/resume</code>, auto-memory</span></li>
+    <li><span>Effort levels</span> <span class="desc">— dial reasoning depth; adaptive thinking</span></li>
+    <li><span>Prompting best practices</span> <span class="desc">— be specific, give context, iterate</span></li>
+    <li><span><strong>Demo 2 — Plan mode</strong></span> <span class="desc">— read-only planning, refine, no edits yet</span></li>
+    <li><span><strong>Demo 3 — Run a skill</strong></span> <span class="desc">— custom slash command fires, then reveal SKILL.md</span></li>
+    <li><span><strong>Exercise 2 — Teach the repo</strong></span> <span class="desc">— fill CLAUDE.md TODOs + write your first skill</span></li>
+  </ul>
+
+  <div class="tip-box">
+    <strong>If short on time:</strong> drop SDLC Carousel, Workflow Transformation, and the TDD deep-dive. Keep every demo.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ADVANCED TRACK -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="advanced">
+  <div class="demo-label">Track B</div>
+  <div class="demo-title">Advanced — 201 → 301</div>
+  <div class="demo-meta">Audience: already using Claude Code daily · 90–180 min · 4–5 demos, 2–3 exercises</div>
+
+  <div class="demo-goal">
+    <strong>Walk-out outcome</strong>
+    <p>Everyone has wired an MCP server, run subagents in parallel, packaged a skill into a plugin, and seen agent teams split work across a tmux session. They know the enterprise/CI surface area.</p>
+  </div>
+
+  <h3 class="block-label">201 — Teach Claude your repo <span style="font-weight:400; text-transform:none; letter-spacing:0;">(compressed — assume install is done)</span></h3>
+  <ul class="topic-list">
+    <li><span>CLAUDE.md &amp; nesting</span> <span class="desc">— quick recap; focus on what <em>shouldn't</em> go in it</span></li>
+    <li><span>Plan mode</span> <span class="desc">— as a refactor-safety tool, not just onboarding</span></li>
+    <li><span>Skills &amp; SKILL.md anatomy</span> <span class="desc">— frontmatter, body, bundled assets</span></li>
+    <li><span>Hooks</span> <span class="desc">— pre/post tool events; block unsafe edits; full lifecycle catalog</span></li>
+    <li><span>MCP architecture</span> <span class="desc">— client/server; tools, resources, prompts over stdio/SSE/HTTP</span></li>
+    <li><span>Checkpointing &amp; <code class="inline">/rewind</code></span> <span class="desc">— three restore modes; code + conversation undo</span></li>
+    <li><span>Effort levels &amp; adaptive thinking</span> <span class="desc">— when to override with ultrathink</span></li>
+    <li><span><strong>Demo 3 — Run a skill</strong></span> <span class="desc">— then reveal SKILL.md</span></li>
+    <li><span><strong>Demo 4 — Hooks block edits</strong></span> <span class="desc">— pre-edit hook blocks unsafe path; Claude routes around</span></li>
+  </ul>
+
+  <h3 class="block-label">301 — Scale &amp; integrate</h3>
+  <ul class="topic-list">
+    <li><span>Parallel patterns</span> <span class="desc">— why parallelize; sequential vs parallel; three patterns</span></li>
+    <li><span>Subagents</span> <span class="desc">— Explore / Plan / General; isolated context</span></li>
+    <li><span>Custom agents</span> <span class="desc">— define your own in <code class="inline">.claude/agents/</code> — model, tools, isolation</span></li>
+    <li><span>MCP</span> <span class="desc">— USB for tools; <code class="inline">claude mcp add</code>; managed MCP for org-wide connectors</span></li>
+    <li><span>Plugins</span> <span class="desc">— bundle skills + MCP + hooks; one install, whole team inherits; must-have starter set</span></li>
+    <li><span>Agent teams</span> <span class="desc">— tmux split; many Claudes, one repo, filesystem as message bus</span></li>
+    <li><span>Parallel compare</span> <span class="desc">— subagents vs parallel Claude vs agent teams</span></li>
+    <li><span>Surfaces beyond the CLI</span> <span class="desc">— Claude Code Web, scheduled tasks, mobile approve, remote control</span></li>
+    <li><span>Enterprise &amp; CI</span> <span class="desc">— policy deployment, runtime hardening, headless <code class="inline">--bare -p</code></span></li>
+    <li><span><strong>Demo 5 — Parallel Explore</strong></span> <span class="desc">— 3 Explore agents fan out, results merge back</span></li>
+    <li><span><strong>Demo 6 — Wire up MCP</strong></span> <span class="desc">— add server, ask a question, tool call appears</span></li>
+    <li><span><strong>Demo 7 — Agent teams</strong></span> <span class="desc">— tmux split, three Claudes, one feature</span></li>
+    <li><span><strong>Exercise 3 — Wire up MCP</strong></span> <span class="desc">— hands-on</span></li>
+    <li><span><strong>Exercise 4 — Package it</strong></span> <span class="desc">— bundle your skill into a plugin, validate green</span></li>
+  </ul>
+
+  <div class="tip-box">
+    <strong>If short on time:</strong> drop Mobile, Remote Control, and the Parallel Compare matrix. Keep Demo 7 — agent teams is the slide people photograph.
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<p style="font-size: 13px; color: #73726C;">
+  Full slide inventory with thumbnails: <a href="planner.html" style="color:#D97757;">Slide Planner</a>.
+  To turn a track into a working deck for a specific client, run <code class="inline">/ncp</code> from the repo root and answer the 8 questions — it assembles the manifest, demo repo, planted bug, and speaker notes from this syllabus.
+</p>
+
+</body>
+</html>

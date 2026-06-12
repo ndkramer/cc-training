@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to use this project — Customer Presentations</title>
+  <style>
+    @font-face {
+      font-family: 'Anthropic Sans';
+      src: url('assets/fonts/AnthropicSans-Roman-Web.woff2') format('woff2');
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('assets/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+      font-weight: 400;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Anthropic Sans', -apple-system, sans-serif;
+      background: #FAF9F5;
+      color: #141413;
+      line-height: 1.6;
+      padding: 64px 48px;
+      max-width: 760px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: #D97757; text-decoration: none;
+      margin-bottom: 32px; font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .header img { width: 32px; height: 32px; }
+    .header h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.01em; }
+    .header-sub { font-size: 14px; color: #73726C; margin-bottom: 40px; }
+
+    .resource-list { list-style: none; }
+
+    .resource {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 20px 24px;
+      background: #fff;
+      border: 1px solid rgba(31,30,29,0.08);
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      margin-bottom: 14px;
+      transition: border-color 0.15s;
+    }
+    .resource:hover { border-color: #D97757; }
+
+    .resource-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: #D9775712;
+      color: #D97757;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .resource-body { flex: 1; min-width: 0; }
+    .resource-title { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+    .resource-desc { font-size: 13px; color: #73726C; }
+
+    .resource-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #A6A49D;
+      flex-shrink: 0;
+      align-self: center;
+    }
+  </style>
+</head>
+<body>
+
+<a href="/" class="back-link">← All presentations</a>
+
+<div class="header">
+  <img src="assets/clay-spark.svg" alt="">
+  <h1>How to use this project</h1>
+</div>
+<p class="header-sub">Partner Enablement · Accenture · 60 min · For presenters. How to clone the repo, branch, generate a client deck with /ncp, align it to the client's domain, smoke-test the demos, and serve locally.</p>
+
+<ul class="resource-list">
+  <li>
+    <a href="deck.html" class="resource">
+      <div class="resource-icon">▸</div>
+      <div class="resource-body">
+        <div class="resource-title">Presentation deck</div>
+        <div class="resource-desc">25 slides, 60 min. One live demo: kick off /ncp on slide 11 for "Acme Robotics", return on slide 23 to tour the output. S for speaker notes, ?print-pdf for static export.</div>
+      </div>
+      <div class="resource-meta">deck.html</div>
+    </a>
+  </li>
+  <li>
+    <a href="demo-scripts.html" class="resource">
+      <div class="resource-icon">☰</div>
+      <div class="resource-body">
+        <div class="resource-title">Demo script</div>
+        <div class="resource-desc">Runbook for the live /ncp demo. Preflight, the 8 answers to type, recovery (pre-baked .demo-backup/ if /ncp stalls). Keep on a second screen.</div>
+      </div>
+      <div class="resource-meta">demo-scripts.html</div>
+    </a>
+  </li>
+  <li>
+    <a href="../../_shared/planner.html" class="resource">
+      <div class="resource-icon">⊞</div>
+      <div class="resource-body">
+        <div class="resource-title">Slide planner</div>
+        <div class="resource-desc">Toggle slides on/off, see timing budget, copy CSV. Optional input to /ncp question 1.</div>
+      </div>
+      <div class="resource-meta">_shared/planner.html</div>
+    </a>
+  </li>
+</ul>
+
+</body>
+</html>

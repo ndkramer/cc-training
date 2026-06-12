@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Scripts — Claude Code · Accenture</title>
+  <style>
+    @font-face {
+      font-family: 'Anthropic Sans';
+      src: url('assets/fonts/AnthropicSans-Roman-Web.woff2') format('woff2');
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('assets/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+      font-weight: 400;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Anthropic Sans', -apple-system, sans-serif;
+      background: #FAF9F5;
+      color: #141413;
+      line-height: 1.6;
+      padding: 48px;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .header img { width: 28px; height: 28px; }
+    .header h1 { font-size: 28px; font-weight: 500; }
+    .header-sub { font-size: 14px; color: #73726C; margin-bottom: 36px; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: #D97757; text-decoration: none;
+      margin-bottom: 24px; font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    .toc {
+      position: sticky; top: 0; z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+      margin-bottom: 48px;
+      padding: 18px 20px;
+      background: #fff;
+      border: 1px solid rgba(31,30,29,0.08);
+      border-radius: 10px;
+      font-size: 13px;
+      box-shadow: 0 1px 3px rgba(31,30,29,0.04);
+    }
+    .toc a { color: #3D3D3A; text-decoration: none; }
+    .toc a:hover { color: #D97757; }
+    .toc-num { color: #D97757; font-weight: 600; margin-right: 6px; }
+
+    .setup-section {
+      margin-bottom: 48px;
+      border-left: 3px solid #73726C;
+      padding-left: 28px;
+    }
+    .setup-label {
+      font-size: 11px; font-weight: 600; color: #73726C;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .setup-title {
+      font-size: 22px; font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .platform-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #fff;
+      border: 1px solid rgba(31,30,29,0.08);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .platform-table th, .platform-table td {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(31,30,29,0.06);
+    }
+    .platform-table th {
+      font-size: 12px; font-weight: 600; color: #73726C;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      background: #faf9f5;
+    }
+    .platform-table tr:last-child td { border-bottom: none; }
+    .platform-table td:first-child { font-weight: 600; width: 110px; }
+
+    .demo-section {
+      margin-bottom: 56px;
+      border-left: 3px solid #D97757;
+      padding-left: 28px;
+    }
+
+    .demo-label {
+      font-size: 11px; font-weight: 600; color: #D97757;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .demo-title {
+      font-size: 24px; font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .demo-meta {
+      font-size: 13px; color: #73726C;
+      margin-bottom: 20px;
+    }
+
+    .demo-goal {
+      background: #fff;
+      border: 1px solid rgba(31,30,29,0.08);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+    }
+    .demo-goal strong { font-weight: 600; }
+    .demo-goal p { font-size: 14px; color: #3D3D3A; margin-top: 4px; }
+
+    h3.block-label {
+      font-size: 13px; font-weight: 600; color: #73726C;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .checklist {
+      list-style: none; padding: 0;
+      margin-bottom: 20px;
+    }
+    .checklist li {
+      padding: 5px 0;
+      font-size: 13.5px;
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+    .checklist li::before {
+      content: '☐';
+      color: #D97757;
+      flex-shrink: 0;
+    }
+
+    .prompt-box {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .prompt-label {
+      font-size: 11px; font-weight: 600; color: #73726C;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .prompt-cmd {
+      padding: 14px 16px;
+      background: #0e0e0d;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #d1cfc5;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      user-select: all;
+      cursor: text;
+    }
+    .prompt-cmd .sh-prompt { color: #888; }
+    .prompt-cmd.shell { color: #a8d4a8; }
+
+    /* Expected output block — distinct from prompt boxes */
+    .output-box {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .output-label {
+      font-size: 11px; font-weight: 600; color: #4a8c6a;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .output-cmd {
+      padding: 14px 16px;
+      background: #0d1510;
+      border-left: 3px solid #4a8c6a;
+      border-radius: 0 8px 8px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #b8d4b8;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    .output-cmd .ok   { color: #6dbe8d; }
+    .output-cmd .fail { color: #e07070; }
+    .output-cmd .dim  { color: #6a7d6a; }
+    .output-cmd .hi   { color: #f0c060; }
+    .output-cmd .bold { font-weight: 700; color: #d1cfc5; }
+
+    .say {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid rgba(31,30,29,0.06);
+      font-size: 13.5px;
+      color: #3D3D3A;
+      font-style: italic;
+    }
+    .say::before { content: '💬 '; font-style: normal; }
+
+    .sees {
+      margin-bottom: 16px;
+      font-size: 13.5px;
+      color: #3D3D3A;
+    }
+    .sees strong { font-weight: 600; color: #141413; }
+
+    .tip-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: #D9775708;
+      border-radius: 8px;
+      border-left: 3px solid #D97757;
+      font-size: 13px;
+      color: #3D3D3A;
+    }
+    .tip-box strong { font-weight: 600; color: #D97757; }
+
+    .reset-box {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: rgba(115,114,108,0.06);
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: #73726C;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .reset-box::before {
+      content: 'RESET AFTER: ';
+      font-family: 'Anthropic Sans', sans-serif;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #73726C;
+    }
+
+    code.inline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: #f0efe8;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    kbd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      background: #fff;
+      border: 1px solid rgba(31,30,29,0.15);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 1px 6px;
+    }
+
+    .divider { height: 1px; background: rgba(31,30,29,0.08); margin: 16px 0 20px; }
+  </style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">&larr; Back to workshop</a>
+
+<div class="header">
+  <img src="assets/clay-spark.svg" alt="">
+  <h1>Demo scripts &mdash; Claude Code &middot; Accenture</h1>
+</div>
+<p class="header-sub">Six ~90s live demos. All run from <code class="inline">order-service/</code>. Copy prompts directly from the dark boxes &mdash; click once to select-all. Green boxes show expected output &mdash; know what good looks like before you present.</p>
+
+<nav class="toc">
+  <a href="#preflight"><span class="toc-num">&starf;</span>Preflight &amp; platform setup</a>
+  <a href="#demo1"><span class="toc-num">1</span>Fix the bug</a>
+  <a href="#demo2"><span class="toc-num">2</span>Plan Mode</a>
+  <a href="#demo3"><span class="toc-num">3</span>/reconcile skill</a>
+  <a href="#demo4"><span class="toc-num">4</span>Parallel Explore</a>
+  <a href="#demo5"><span class="toc-num">5</span>Wire up MCP</a>
+  <a href="#demo6"><span class="toc-num">6</span>Agent team audit</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PREFLIGHT FOR ALL DEMOS -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="setup-section" id="preflight">
+  <div class="setup-label">Before the session</div>
+  <div class="setup-title">Preflight for ALL demos</div>
+
+  <p style="font-size:13.5px; color:#3D3D3A; margin-bottom:14px;">
+    Every block below is select-all on click. Run them in order from <code class="inline">order-service/</code>.
+    Stop and fix anything that doesn't print the expected line &mdash; don't go on stage with a yellow check.
+  </p>
+
+  <h3 class="block-label">Step 1 &mdash; cd into the demo repo</h3>
+  <div class="prompt-box">
+    <div class="prompt-cmd shell">cd "Accenture 180 Min Workshop 2026-04-15/order-service"
+pwd   # &rarr; .../Accenture 180 Min Workshop 2026-04-15/order-service</div>
+  </div>
+
+  <h3 class="block-label">Step 2 &mdash; kill anything still listening on port 3001</h3>
+  <p style="font-size:13px; color:#3D3D3A; margin-bottom:8px;">
+    A prior <code class="inline">npm run mcp:http</code> often leaves a zombie node process bound to 3001. A new server will silently fail to bind and <code class="inline">/mcp</code> will show a red row.
+  </p>
+  <div class="prompt-box">
+    <div class="prompt-cmd shell">npm run mcp:kill
+# &rarr; ports cleared: 3001</div>
+  </div>
+
+  <h3 class="block-label">Step 3 &mdash; install deps (first run on a fresh clone only)</h3>
+  <div class="prompt-box">
+    <div class="prompt-cmd shell">npm install
+# &rarr; pulls @modelcontextprotocol/sdk. Skip if node_modules/ already exists.</div>
+  </div>
+
+  <h3 class="block-label">Step 4 &mdash; reset the demo state</h3>
+  <div class="prompt-box">
+    <div class="prompt-cmd shell">npm run reset-demo
+# &rarr; re-plants the Math.ceil bug in lib/pricing.js, restores CLAUDE.md, resets data.
+#   (./reset-demo.sh and reset-demo.cmd are thin shims &mdash; same thing.)</div>
+  </div>
+
+  <h3 class="block-label">Step 5 &mdash; confirm the planted bug is back</h3>
+  <div class="prompt-box">
+    <div class="prompt-cmd shell">npm test
+# &rarr; expect: 3 pass, 1 FAIL in test/pricing.test.js
+#   "cancellation on day 15 of 30 bills for 15 days"</div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Expected: npm test before reset</div>
+    <div class="output-cmd"><span class="fail">✖</span> cancellation on day 15 of 30 bills for 15 days <span class="dim">(~2ms)</span>
+  <span class="fail">AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:</span>
+  <span class="fail">  16 !== 15</span>
+
+<span class="ok">✔</span> full 30-day cycle bills for 30 days
+<span class="ok">✔</span> same-day cancellation bills for 0 days
+<span class="ok">✔</span> prorated amount for 15 of 30 days at $9000/mo
+
+<span class="dim">ℹ tests 4  ℹ pass 3  </span><span class="fail">ℹ fail 1</span></div>
+  </div>
+
+  <div class="tip-box" style="margin-bottom:20px;">
+    <strong>Two-terminal model (required for Demo 6):</strong><br>
+    <strong>Terminal 1</strong> &mdash; stays on <code class="inline">npm run mcp:http</code> the entire session. Never close it.<br>
+    <strong>Terminal 2</strong> &mdash; this is where you run <code class="inline">claude</code>. Both terminals must be in <code class="inline">order-service/</code>.
+  </div>
+
+  <h3 class="block-label">Step 6 &mdash; boot the order-store MCP server in Terminal 1 (leave running)</h3>
+  <p style="font-size:13px; color:#3D3D3A; margin-bottom:8px;">
+    The order-store MCP serves live order data over localhost HTTP. Demo 6 uses it for the "Which orders have drift over 5%?" prompt. No external creds needed &mdash; it reads <code class="inline">lib/orders.js</code> in-process.
+  </p>
+  <div class="prompt-box">
+    <div class="prompt-cmd shell">npm run mcp:http
+# &rarr; order-store listening on http://localhost:3001/mcp</div>
+  </div>
+  <p style="font-size:13px; color:#73726C; margin-bottom:0;">Leave Terminal 1 here &mdash; do the rest in Terminal 2.</p>
+
+  <h3 class="block-label" style="margin-top:20px;">Step 7 &mdash; verify the port is bound (Terminal 2)</h3>
+  <div class="prompt-box">
+    <div class="prompt-cmd shell">npm run mcp:check
+# &rarr; port 3001: LISTENING
+# If it shows "free", scroll Terminal 1 for the error.</div>
+  </div>
+
+  <h3 class="block-label">Step 8 &mdash; launch Claude Code from order-service/ (Terminal 2)</h3>
+  <p style="font-size:13px; color:#3D3D3A; margin-bottom:8px;">
+    <strong>The directory matters.</strong> Claude Code reads <code class="inline">.mcp.json</code> from the working directory on startup &mdash; that file registers the order-store MCP. If you launch Claude from any other directory, <code class="inline">/mcp</code> will show nothing.
+  </p>
+  <div class="prompt-box">
+    <div class="prompt-cmd shell">pwd   # must print .../Accenture 180 Min Workshop 2026-04-15/order-service
+claude</div>
+  </div>
+  <p style="font-size:13px; color:#73726C; margin-bottom:0;">First time on C4E? Run <code class="inline">claude auth login</code> once before this step.</p>
+
+  <h3 class="block-label" style="margin-top:20px;">Step 9 &mdash; confirm the MCP is connected (inside Claude)</h3>
+  <div class="prompt-box">
+    <div class="prompt-cmd">/clear
+/mcp</div>
+  </div>
+  <p style="font-size:13px; color:#3D3D3A; margin-bottom:8px;">
+    Expect <code class="inline">order-store</code> to show <code class="inline">connected</code>.<br>
+    <strong>If red:</strong> the server didn't bind. Switch to Terminal 1 &mdash; look for an <code class="inline">EADDRINUSE</code> error. Re-run Step 2 (kill ports), then Step 6 (restart server), then <code class="inline">/mcp</code> again.<br>
+    <strong>If missing entirely:</strong> Claude wasn't launched from <code class="inline">order-service/</code> &mdash; exit, <code class="inline">cd</code> back, and re-run Step 8.
+  </p>
+
+  <h3 class="block-label">Step 10 &mdash; room hygiene</h3>
+  <ul class="checklist">
+    <li>Terminal font size &ge; 18pt, light theme if possible</li>
+    <li>Close Slack, silence notifications, Do Not Disturb on</li>
+    <li>Send one throwaway prompt in Claude so the session is warm</li>
+    <li>Browser tab open to <code class="inline">demo-scripts.html</code> on a second monitor (this page) &mdash; every prompt is select-all-on-click</li>
+    <li>Demo 7 needs tmux &mdash; start your main session inside <code class="inline">tmux new -s workshop</code> from the beginning</li>
+  </ul>
+
+  <div class="tip-box">
+    <strong>Re-running between sessions:</strong> Steps 2 &rarr; 4 &rarr; 5 &rarr; 6 &rarr; 9. Skip 1, 3, 8, 10 if you didn't close anything.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PLATFORM SETUP -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="setup-section">
+  <div class="setup-label">Pick one</div>
+  <div class="setup-title">Platform setup &mdash; pre-launch env vars</div>
+  <p style="font-size:13px; color:#73726C; margin-bottom:14px;">Set these before launching <code class="inline">claude</code>. This session is C4E &mdash; highlighted row.</p>
+  <table class="platform-table">
+    <thead>
+      <tr><th>Platform</th><th>Pre-launch env vars</th></tr>
+    </thead>
+    <tbody>
+      <tr style="background: #D9775710;">
+        <td>C4E</td>
+        <td><code class="inline">claude auth login</code> &nbsp;<span style="color:#73726C;">(already done, no env vars)</span></td>
+      </tr>
+      <tr>
+        <td>1P API</td>
+        <td><code class="inline">export ANTHROPIC_API_KEY=sk-ant-...</code></td>
+      </tr>
+      <tr>
+        <td>Bedrock</td>
+        <td><code class="inline">export CLAUDE_CODE_USE_BEDROCK=1 &amp;&amp; export AWS_REGION=us-east-1</code></td>
+      </tr>
+      <tr>
+        <td>Vertex</td>
+        <td><code class="inline">export CLAUDE_CODE_USE_VERTEX=1 &amp;&amp; gcloud auth application-default login</code></td>
+      </tr>
+      <tr>
+        <td>Azure</td>
+        <td><code class="inline">export ANTHROPIC_AZURE_ENDPOINT=https://...</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DEMO 1: Fix the bug -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="demo1">
+  <div class="demo-label">Demo 1</div>
+  <div class="demo-title">Fix the bug &mdash; the core loop</div>
+  <div class="demo-meta">~90s &middot; shown at &ge;1.0h &middot; read &rarr; find &rarr; fix &rarr; verify</div>
+
+  <div class="demo-goal">
+    <strong>Goal:</strong>
+    <p>Show the core loop. Claude reads the test output, reads the code, finds the rounding bug, fixes it, reruns, green. Nobody tells it where to look.</p>
+  </div>
+
+  <h3 class="block-label">Pre-flight</h3>
+  <ul class="checklist">
+    <li><code class="inline">./reset-demo.sh</code> has run &mdash; bug is live</li>
+    <li><code class="inline">npm test</code> shows 3 pass / 1 fail (confirm off-screen)</li>
+    <li>Fresh <code class="inline">claude</code> session, cwd = order-service root</li>
+  </ul>
+
+  <div class="prompt-box">
+    <div class="prompt-label">Paste this</div>
+    <div class="prompt-cmd">npm test is failing in order-service. Find and fix it.</div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Expected: what Claude does (narrate this live)</div>
+    <div class="output-cmd"><span class="dim">● Runs npm test</span>
+
+<span class="fail">✖</span> cancellation on day 15 of 30 bills for 15 days
+  <span class="fail">AssertionError: 16 !== 15</span>
+
+<span class="dim">● Opens lib/pricing.js — reads billableDays()</span>
+
+  <span class="hi">return Math.ceil(elapsed);   // BUG: 15.0048 -> 16</span>
+
+<span class="dim">● Identifies root cause: scheduler latency adds ~417ms,
+  pushing elapsed to 15.0048 days. Math.ceil rounds up to 16.
+  Math.floor is correct — truncate sub-day latency noise.</span>
+
+<span class="dim">● Edits lib/pricing.js:</span>
+  <span class="fail">- return Math.ceil(elapsed);</span>
+  <span class="ok">+ return Math.floor(elapsed);</span>
+
+<span class="dim">● Reruns npm test</span>
+
+<span class="ok">✔</span> full 30-day cycle bills for 30 days
+<span class="ok">✔</span> cancellation on day 15 of 30 bills for 15 days
+<span class="ok">✔</span> same-day cancellation bills for 0 days
+<span class="ok">✔</span> prorated amount for 15 of 30 days at $9000/mo
+
+<span class="dim">ℹ tests 4  </span><span class="ok">ℹ pass 4  ℹ fail 0</span></div>
+  </div>
+
+  <div class="say">It read the test output. It read the code. It found it. Nobody told it where to look.</div>
+
+  <div class="tip-box">
+    <strong>Recovery:</strong> If Claude wanders (reads routes, reads CLAUDE.md, circles) &mdash; nudge: <em>"Focus on lib/pricing.js &mdash; the rounding looks wrong."</em> Still lands; you've just shown how to steer.
+  </div>
+
+  <div class="reset-box">./reset-demo.sh</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DEMO 2: Plan Mode -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="demo2">
+  <div class="demo-label">Demo 2</div>
+  <div class="demo-title">Plan Mode &mdash; think before touching</div>
+  <div class="demo-meta">~90s &middot; shown at &ge;1.0h &middot; NO edits land in this demo</div>
+
+  <div class="demo-goal">
+    <strong>Goal:</strong>
+    <p>Show Plan Mode's value &mdash; for a scary change, Claude reads the code, proposes a step-by-step plan, and waits for approval. No files change.</p>
+  </div>
+
+  <h3 class="block-label">Pre-flight</h3>
+  <ul class="checklist">
+    <li>Fresh <code class="inline">claude</code> session (bug fixed or not &mdash; doesn't matter)</li>
+    <li>Press <kbd>Shift</kbd>+<kbd>Tab</kbd> <strong>twice</strong> before pasting</li>
+    <li>Confirm status line shows <code class="inline">&Pscr; plan mode</code></li>
+  </ul>
+
+  <div class="prompt-box">
+    <div class="prompt-label">Paste this (in plan mode)</div>
+    <div class="prompt-cmd">Refactor pricing to support bulk discount tiers &mdash; e.g. 5% off above 100 units, 10% off above 500. What would that take?</div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Expected: Claude's plan (approximate — phrasing varies)</div>
+    <div class="output-cmd"><span class="dim">● Reads lib/pricing.js, lib/orders.js</span>
+
+<span class="bold">Here's what the bulk discount refactor would take:</span>
+
+<span class="hi">1. Add discountTiers config to lib/pricing.js</span>
+   Define a tiers array: [{ minUnits: 100, pct: 5 }, { minUnits: 500, pct: 10 }]
+   Export a new applyTierDiscount(units, rate) helper.
+
+<span class="hi">2. Update proratedAmount() to accept a units parameter</span>
+   Call applyTierDiscount() before computing the prorated charge.
+   Existing callers with no units arg get a 0% discount (backward-safe).
+
+<span class="hi">3. Add test/bulk.test.js</span>
+   Test: 99 units → no discount, 150 units → 5% off, 600 units → 10% off.
+   Test: proration still correct when discount applies.
+
+<span class="hi">4. Update lib/orders.js</span>
+   Add optional unitsOrdered field to each order record.
+   Existing orders get unitsOrdered: null (no discount applied).
+
+<span class="dim">No files changed. Approve this plan to proceed, or ask me to revise it.</span>
+
+<span class="dim">──────────────────────────────────────────────
+[Approve plan] [Request changes] [Reject]</span></div>
+  </div>
+
+  <div class="say">For a scary change, you want the plan first. Shift+Tab twice. Claude reads, proposes, waits.</div>
+
+  <div class="divider"></div>
+  <p style="font-size:13px; color:#73726C;">Press <kbd>Esc</kbd> or deny the plan. Don't approve &mdash; we're not building this today.</p>
+
+  <div class="tip-box">
+    <strong>Recovery:</strong> If the plan is hand-wavy &mdash; ask: <em>"Be more specific &mdash; which files change and which function signatures change?"</em> The iteration on the plan is itself a good demo.
+  </div>
+
+  <div class="reset-box">Exit plan mode (Esc). No file changes to revert.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DEMO 3: /reconcile skill -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="demo3">
+  <div class="demo-label">Demo 3</div>
+  <div class="demo-title">/reconcile skill &mdash; packaged workflow</div>
+  <div class="demo-meta">~90s &middot; shown at &ge;1.0h &middot; PRE-STAGE the SKILL.md before session</div>
+
+  <div class="demo-goal">
+    <strong>Goal:</strong>
+    <p>Skills turn a repeatable workflow into a slash command. 20 lines of markdown &rarr; a safe, test-gated reconciliation command anyone on the team can run.</p>
+  </div>
+
+  <h3 class="block-label">Pre-flight</h3>
+  <ul class="checklist">
+    <li>Bug is fixed (run Demo 1 first, or manually patch <code class="inline">Math.ceil</code> &rarr; <code class="inline">Math.floor</code>)</li>
+    <li>Skill is pre-staged: <code class="inline">.claude/skills/reconcile/SKILL.md</code> already exists (created by <code class="inline">reset-demo.sh</code>)</li>
+    <li>Data files are present: <code class="inline">data/ORD-0042-invoices.json</code></li>
+    <li>Restart <code class="inline">claude</code> so it picks up the skill</li>
+  </ul>
+
+  <div class="prompt-box">
+    <div class="prompt-label">Paste this (in claude)</div>
+    <div class="prompt-cmd">/reconcile ORD-0042</div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Expected: full reconciliation run for ORD-0042</div>
+    <div class="output-cmd"><span class="bold">Reconciliation Report — ORD-0042</span>
+
+  Order                  ORD-0042 (Soylent Group — Platform Enterprise Monthly)
+  Reference amount       $4,500.00
+  Original invoiced total $4,567.50
+  Drift                  $67.50 (<span class="hi">1.50%</span>)
+  Policy cap             5% — <span class="ok">within cap</span>
+  Correction applied     INV-0042-ADJ-001 — <span class="fail">-$67.50</span>
+  New invoiced total     <span class="bold">$4,500.00</span>
+  Drift after adjustment <span class="ok">0.00%</span>
+  Tests                  <span class="ok">✔</span> 4/4 pass — no regressions
+
+Snapshot saved to .reset-snapshots/ORD-0042-invoices.json for reset-demo.sh restore.</div>
+  </div>
+
+  <div class="sees" style="font-size:12.5px; color:#73726C;"><strong>Bonus outcome:</strong> if you skipped fixing the bug, <code class="inline">npm test</code> fails and the skill <strong>stops</strong> &mdash; which is arguably an even better demo. "The guardrail held."</div>
+
+  <div class="say">Twenty lines of markdown. No code. Just steps, in plain English, with a guardrail. That's a skill.</div>
+
+  <div class="tip-box">
+    <strong>Recovery:</strong> If skill not found &mdash; restart <code class="inline">claude</code> so the skill loads (skills are discovered at startup). If still missing, re-run <code class="inline">./reset-demo.sh</code> to re-stage <code class="inline">.claude/skills/reconcile/SKILL.md</code>.
+  </div>
+
+  <div class="reset-box">./reset-demo.sh</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DEMO 4: Parallel Explore -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="demo4">
+  <div class="demo-label">Demo 4</div>
+  <div class="demo-title">Parallel Explore &mdash; fan out, map fast</div>
+  <div class="demo-meta">~90s &middot; shown at &ge;1.5h &middot; read-only, no reset needed</div>
+
+  <div class="demo-goal">
+    <strong>Goal:</strong>
+    <p>Subagents fan out to map a codebase in parallel. Three questions, three agents, same wall-clock time as one.</p>
+  </div>
+
+  <h3 class="block-label">Pre-flight</h3>
+  <ul class="checklist">
+    <li>Fresh <code class="inline">claude</code> session in order-service</li>
+    <li>No specific file state required &mdash; this is read-only</li>
+  </ul>
+
+  <div class="prompt-box">
+    <div class="prompt-label">Paste this</div>
+    <div class="prompt-cmd">Map this repo for me. I want to know: the data model, the API surface, and what's tested. Use parallel Explore agents.</div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Expected: three agents spin up, then a synthesis</div>
+    <div class="output-cmd"><span class="dim">Spawning 3 Explore agents in parallel...</span>
+  <span class="dim">⠸ Agent 1: data model     (reading lib/orders.js, lib/pricing.js)</span>
+  <span class="dim">⠸ Agent 2: API surface    (reading app/api/orders/route.js, app/api/invoices/route.js)</span>
+  <span class="dim">⠸ Agent 3: test coverage  (reading test/pricing.test.js)</span>
+
+<span class="ok">✔</span> Agent 2 done  <span class="ok">✔</span> Agent 1 done  <span class="ok">✔</span> Agent 3 done
+
+<span class="bold">Data model (Agent 1)</span>
+  8 orders in lib/orders.js — Globex, Initech, Acme, Soylent Group, Umbrella,
+  Wonka, Stark Solutions, Wayne Systems. Statuses: active / cancelled / suspended.
+  Fields: id, customer, product, status, monthlyRate, cycleStart, cancelledAt.
+  Pricing in lib/pricing.js: billableDays() + proratedAmount() for mid-cycle math.
+
+<span class="bold">API surface (Agent 2)</span>
+  GET  /api/orders     — list orders, optional ?status= filter
+  POST /api/invoices   — trigger reconciliation for a given orderId
+  Both are Next.js route handlers in app/api/.
+
+<span class="bold">Test coverage (Agent 3)</span>
+  test/pricing.test.js — 4 tests covering billableDays() edge cases:
+    full 30-day cycle, day-15 cancellation (scheduler latency), same-day cancel,
+    prorated amount at $9000/mo. No API or order-store tests.</div>
+  </div>
+
+  <div class="say">Three agents, three questions, same wall-clock time as one. On a 200-file repo this is the difference between 30 seconds and 5 minutes.</div>
+
+  <div class="tip-box">
+    <strong>Recovery:</strong> If Claude does it serially instead &mdash; interrupt: <em>"Can you parallelize that with Explore agents?"</em> If one agent is slow, narrate: "two of three are back, parent's waiting on the third."
+  </div>
+
+  <div class="reset-box">None &mdash; read-only.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DEMO 5: Wire up MCP -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="demo5">
+  <div class="demo-label">Demo 5</div>
+  <div class="demo-title">Wire up MCP &mdash; localhost HTTP transport</div>
+  <div class="demo-meta">~90s &middot; shown at &ge;2.0h &middot; needs two terminals</div>
+
+  <div class="demo-goal">
+    <strong>Goal:</strong>
+    <p>Wire the order-store MCP server in two commands. Then ask a natural question &mdash; Claude calls the MCP tool directly. No grep, no file read. A structured tool call to your API, visible in the transcript.</p>
+  </div>
+
+  <h3 class="block-label">Pre-flight</h3>
+  <ul class="checklist">
+    <li><code class="inline">cd order-service &amp;&amp; npm install</code> &mdash; MCP SDK is a real dep, must be installed once</li>
+    <li>Two terminals open in the order-service repo, side-by-side if possible</li>
+    <li><strong>Terminal 1</strong> (leave it running): <code class="inline">npm run mcp:http</code> &mdash; starts the HTTP MCP server on <code class="inline">http://localhost:3001/mcp</code></li>
+    <li><strong>Terminal 2</strong>: register with Claude &mdash; <code class="inline">claude mcp add --transport http order-store http://localhost:3001/mcp</code></li>
+    <li>Restart <code class="inline">claude</code> in Terminal 2 when prompted &mdash; the new tools only show up on a fresh session</li>
+    <li>Sanity-check: <code class="inline">/mcp</code> inside claude should list <code class="inline">order-store</code> as connected (green dot)</li>
+  </ul>
+
+  <div class="prompt-box">
+    <div class="prompt-label">Paste this</div>
+    <div class="prompt-cmd">Show me all our active orders. Which one is the highest monthly rate?</div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Expected: an mcp__order-store__* tool call, not a Read</div>
+    <div class="output-cmd"><span class="dim">● Calling MCP tool</span>
+  <span class="hi">mcp__order-store__list_orders</span><span class="dim">(status: "active")</span>
+
+<span class="dim">● Result (5 active orders):</span>
+  <span class="ok">✔</span> ORD-0012  Globex Corp        $4,500/mo
+  <span class="ok">✔</span> ORD-0023  Initech LLC        $1,200/mo
+  <span class="ok">✔</span> ORD-0055  Umbrella Ltd      $1,000/mo
+  <span class="ok">✔</span> ORD-0067  Wonka Enterprises  $4,500/mo
+  <span class="ok">✔</span> ORD-0089  Stark Solutions    <span class="hi">$9,000/mo</span>
+
+<span class="dim">● Five active orders. The highest monthly rate is ORD-0089
+  (Stark Solutions) at $9,000/mo — Platform Enterprise Annual.</span></div>
+  </div>
+
+  <div class="say">That's not a grep. Not a file read. Claude called your API directly &mdash; same wire format as every other MCP server. Two commands of setup, localhost HTTP, and now Claude has eyes on your order store. The audit trail is on your server, not in your terminal scrollback.</div>
+
+  <div class="tip-box">
+    <strong>Why HTTP and not stdio?</strong> On a locked-down corporate laptop, stdio can't always spawn a child process. Localhost HTTP slides through the allowlist &mdash; same MCP protocol, different transport. If you want to show the stdio path on a personal machine, the repo also ships <code class="inline">npm run mcp</code> + <code class="inline">claude mcp add order-store -- node mcp/order-store/server.js</code>.
+    <br><br>
+    <strong>Recovery:</strong> If Claude does a Read on a config file instead of calling the tool &mdash; interrupt: <em>"Use the MCP tool."</em> If <code class="inline">/mcp</code> shows the server as red/disconnected, check that Terminal 1 is still running and the port isn't already in use (<code class="inline">lsof -iTCP:3001</code> on Mac/Linux, <code class="inline">netstat -ano | findstr 3001</code> on Windows).
+  </div>
+
+  <div class="reset-box">Ctrl-C Terminal 1 to stop the server. <code class="inline">claude mcp remove order-store</code> if cleaning up between sessions.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DEMO 6: Agent team audit -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="demo6">
+  <div class="demo-label">Demo 6</div>
+  <div class="demo-title">Agent team audit &mdash; lateral coordination</div>
+  <div class="demo-meta">~90s &middot; shown at &ge;3.0h &middot; needs clean data/ state</div>
+
+  <div class="demo-goal">
+    <strong>Goal:</strong>
+    <p>Three named agents coordinate via SendMessage. Auditor scans for drift, hands the list to the fixer, fixer hands the change list to the verifier. No human routing.</p>
+  </div>
+
+  <h3 class="block-label">Pre-flight</h3>
+  <ul class="checklist">
+    <li>Bug is fixed &mdash; <code class="inline">npm test</code> passes all 4</li>
+    <li><code class="inline">git status</code> is clean &mdash; makes the final diff obvious</li>
+    <li>Data files present: <code class="inline">data/ORD-0042-invoices.json</code> and <code class="inline">data/ORD-0118-invoices.json</code></li>
+  </ul>
+
+  <div class="prompt-box">
+    <div class="prompt-label">Paste this</div>
+    <div class="prompt-cmd">Spawn an agent team for order reconciliation audit. Three agents, each with one job:
+- auditor: scan data/*.json, report which orders have drift > 2% from their reference total. Don't fix anything.
+- fixer: receive the auditor's list via SendMessage. For each order, check if already reconciled — skip those. Otherwise apply the correction in lib/reconciliation.js. Report what changed.
+- verifier: receive the fixer's change list via SendMessage. Run npm test. Report pass/fail.
+Orchestrate the team — don't do the work yourself. I want to see the SendMessage handoffs.</div>
+  </div>
+
+  <!-- SECOND-PROMPT: team-primitives -->
+  <div class="say" style="margin-top:18px;"><strong>Fallback &mdash; only if Prompt A didn't show team primitives.</strong> If the first run fanned out plain subagents but you didn't see <code class="inline">TeamCreate</code>, <code class="inline">TaskCreate</code>, or <code class="inline">addBlockedBy</code>, paste the Second prompt below. Same outcome, but Claude uses real team primitives &mdash; shared task list with dependencies, owned task IDs, <code class="inline">TaskUpdate</code> on completion, <code class="inline">shutdown_request</code> at the end.</div>
+
+  <div class="prompt-box">
+    <div class="prompt-label">Second prompt — use if the first prompt spawned subagents instead of a real team</div>
+    <div class="prompt-cmd">Run order reconciliation as a real agent team — spawn it via TeamCreate,
+not loose parallel Agent calls. Set it up like this:
+
+1. TeamCreate a team named "reconcile-audit-team".
+2. Create three tasks in the shared task list:
+   - T1: auditor — scan every order in data/*.json, list orders whose
+     invoiced total drifts more than 2% from the reference amount. Don't fix anything.
+     Write the list back as the task result.
+   - T2: fixer — read T1's result, apply the correction in lib/reconciliation.js
+     for each flagged order. Skip any order already reconciled. Report what changed.
+   - T3: verifier — run `npm test`. Report pass/fail and the test count.
+3. Spawn three teammates in a SINGLE message (parallel), each with a
+   self-contained prompt that tells them to claim their task by ID from
+   the shared task list and mark it completed via TaskUpdate when done:
+     - "auditor" (general-purpose) → T1
+     - "fixer"   (general-purpose) → T2, depends on T1
+     - "verifier" (general-purpose) → T3, depends on T2
+   Express T2-waits-on-T1 and T3-waits-on-T2 with addBlockedBy.
+4. Don't do any of the audit/fix/verify work yourself. Wait for teammates'
+   completion messages, then shut the team down with a shutdown_request
+   SendMessage to each teammate once all three tasks are marked done.
+5. Final report to me: one line per task (done / blocked / failed) plus
+   the npm test result. Under 120 words.</div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Expected: auditor → fixer → verifier handoff chain</div>
+    <div class="output-cmd"><span class="dim">Orchestrator spawning agents...</span>
+  <span class="dim">⠸ auditor  starting</span>
+  <span class="dim">⠸ fixer    waiting for auditor</span>
+  <span class="dim">⠸ verifier waiting for fixer</span>
+
+<span class="bold">── auditor ──────────────────────────────────────</span>
+<span class="dim">Reads data/ORD-0042-invoices.json</span>
+  invoiced $4,567.50 vs reference $4,500.00
+  drift 1.50% → <span class="ok">below 2% threshold, skip</span>
+
+<span class="dim">Reads data/ORD-0118-invoices.json</span>
+  invoiced $2,800.00 vs reference $2,700.00
+  drift <span class="hi">3.70%</span> → <span class="fail">above 2% threshold, flagged</span>
+
+<span class="dim">SendMessage → fixer:</span>
+  <span class="hi">["ORD-0118"]  // orders needing correction</span>
+
+<span class="bold">── fixer ────────────────────────────────────────</span>
+<span class="dim">Received: ["ORD-0118"]</span>
+<span class="dim">Checks ORD-0118 — no prior adjustment found</span>
+<span class="dim">Applies correction via lib/reconciliation.js</span>
+  Added: INV-0118-ADJ-001  "Reconciliation adjustment — drift correction"  <span class="fail">-$100.00</span>
+  New invoiced total: $2,700.00  drift: 0.00%
+
+<span class="dim">SendMessage → verifier:</span>
+  <span class="hi">{ ORD-0118: { adjusted: true, delta: -100.00 } }</span>
+
+<span class="bold">── verifier ─────────────────────────────────────</span>
+<span class="dim">Received fixer's change list</span>
+<span class="dim">Runs npm test</span>
+<span class="ok">✔</span> full 30-day cycle bills for 30 days
+<span class="ok">✔</span> cancellation on day 15 of 30 bills for 15 days
+<span class="ok">✔</span> same-day cancellation bills for 0 days
+<span class="ok">✔</span> prorated amount for 15 of 30 days at $9000/mo
+<span class="dim">ℹ tests 4  </span><span class="ok">ℹ pass 4  ℹ fail 0</span>
+
+<span class="bold">Team complete. ORD-0118 corrected (-$100.00). All tests green.</span></div>
+  </div>
+
+  <div class="say">Three agents. You defined who does what. They coordinated. The filesystem and SendMessage are the bus.</div>
+
+  <div class="tip-box">
+    <strong>Recovery:</strong> If Claude does it serially in the main session: <em>"Don't do the work yourself &mdash; spawn three agents. I want to see SendMessage handoffs between them."</em> If agents don't coordinate &mdash; nudge: <em>"The auditor should send its findings to the fixer via SendMessage before the fixer acts."</em>
+  </div>
+
+  <div class="reset-box">./reset-demo.sh</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- GENERAL PRESENTER TIPS -->
+<!-- ═══════════════════════════════════════════ -->
+<div style="margin-top: 48px; padding: 28px 32px; background: #fff; border-radius: 12px; border: 1px solid rgba(31,30,29,0.08);">
+  <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">General presenter tips</h3>
+  <ul style="list-style: none; padding: 0; font-size: 14px; color: #3D3D3A; line-height: 1.7;">
+    <li style="margin-bottom: 8px;">
+      <span style="color: #D97757; font-weight: 600;">Know the numbers.</span>
+      ORD-0042 drifts $67.50 (1.5%). ORD-0118 drifts $100.00 (3.7%). The green boxes in this doc are your ground truth — scan them before you present.
+    </li>
+    <li style="margin-bottom: 8px;">
+      <span style="color: #D97757; font-weight: 600;">Paste, don't type.</span>
+      Every prompt in this doc is click-to-select-all. Fumbled typing kills momentum.
+    </li>
+    <li style="margin-bottom: 8px;">
+      <span style="color: #D97757; font-weight: 600;">Narrate the wait.</span>
+      When Claude is reading, say what it's reading. "It's looking at the test output&hellip; now it's opening pricing.js&hellip; there's the Math.ceil."
+    </li>
+    <li style="margin-bottom: 8px;">
+      <span style="color: #D97757; font-weight: 600;">Self-correction is a feature.</span>
+      If Demo 1 takes two passes instead of one &mdash; that's <em>better</em>. One-shot is a magic trick; two-shot is an engineering process the room can trust.
+    </li>
+    <li style="margin-bottom: 8px;">
+      <span style="color: #D97757; font-weight: 600;">Time check: Demo 4 is skippable.</span>
+      If running long, skip Parallel Explore &mdash; it's read-only, no reset needed. Never cut 1, 3, or 6.
+    </li>
+    <li>
+      <span style="color: #D97757; font-weight: 600;">ORD-0042 is the through-line.</span>
+      Demos 1, 3, and 7 all touch the same order. Call it out: "Same order we fixed in Demo 1 &mdash; now we're reconciling it."
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>

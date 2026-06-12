@@ -1,0 +1,22 @@
+{
+  "name": "order-service",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "reset-demo": "node scripts/reset.js",
+    "check": "node --check lib/pricing.js && node --check lib/orders.js && node --check lib/reconciliation.js && node --check app/api/orders/route.js && node --check app/api/invoices/route.js && echo 'syntax ok'",
+    "dev": "next dev",
+    "mcp": "node mcp/order-store/server.js",
+    "mcp:http": "node mcp/order-store/server-http.js",
+    "mcp:kill": "node scripts/port.js kill 3001",
+    "mcp:check": "node scripts/port.js check 3001"
+  },
+  "dependencies": {
+    "next": "^16.1.7",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  }
+}

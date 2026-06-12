@@ -1,0 +1,39 @@
+/* VS Code mock structural classes — extracted from deck-v4.html inline <style>.
+   theme.css has the CSS vars; this file has the layout rules. */
+.vscode-window { width:100%; height:100%; background:#1e1e1e; display:flex; flex-direction:column; overflow:hidden; }
+.vscode-titlebar { height:32px; background:#323233; display:flex; align-items:center; padding:0 12px; gap:8px; flex-shrink:0; }
+.window-controls { display:flex; gap:8px; }
+.window-control { width:12px; height:12px; border-radius:50%; }
+.window-control.close { background:#ff5f56; }
+.window-control.minimize { background:#ffbd2e; }
+.window-control.maximize { background:#27c93f; }
+.window-title { flex:1; text-align:center; font-size:12px; color:#999; }
+.vscode-main { flex:1; display:flex; overflow:hidden; }
+.activity-bar { width:48px; background:#252526; display:flex; flex-direction:column; align-items:center; padding:8px 0; gap:4px; border-right:1px solid #303031; }
+.activity-item { width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:#cccccc; font-size:22px; border-radius:4px; }
+.activity-item.active { color:#fff; border-left:2px solid #d97757; margin-left:-2px; }
+.activity-spacer { flex:1; }
+.sidebar { width:180px; background:#252526; border-right:1px solid #303031; display:flex; flex-direction:column; }
+.sidebar-header { padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#ccc; font-weight:600; }
+.file-tree { padding:0 8px; }
+.file-item { display:flex; align-items:center; gap:6px; padding:4px 8px; font-size:13px; color:#ccc; border-radius:4px; }
+.file-item i { font-size:14px; color:#858585; }
+.editor-area { flex:1; display:flex; flex-direction:column; background:#1e1e1e; }
+.tabs-bar { height:35px; background:#252526; display:flex; align-items:stretch; border-bottom:1px solid #303031; }
+.tab { display:flex; align-items:center; gap:6px; padding:0 12px; font-size:12px; color:#969696; background:#2d2d2d; border-right:1px solid #252526; }
+.tab.active { background:#1e1e1e; color:#fff; }
+.tab i { font-size:14px; }
+.editor-content { flex:1; display:flex; position:relative; overflow:hidden; }
+.code-editor { flex:1; display:flex; flex-direction:column; font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:13px; line-height:1.6; padding:12px 0; overflow:hidden; }
+.code-line { display:flex; padding:0 12px; transition:background 0.2s; }
+.code-line.highlight { background:rgba(217,119,87,0.15); border-left:2px solid #d97757; }
+.line-number { width:40px; color:#858585; text-align:right; padding-right:16px; user-select:none; }
+.line-content { flex:1; color:#d4d4d4; }
+.keyword { color:#569cd6; }
+.string { color:#ce9178; }
+.function { color:#dcdcaa; }
+.comment { color:#6a9955; }
+.type { color:#4ec9b0; }
+.claude-panel { width:360px; background:var(--bg-primary); border-left:1px solid #303031; display:flex; flex-direction:column; position:relative; overflow:hidden; }
+.chat-scroll { flex:1; overflow-y:auto; padding:12px 16px 100px; }
+[contenteditable][data-placeholder]:empty::before { content:attr(data-placeholder); color:var(--fg-muted); pointer-events:none; }

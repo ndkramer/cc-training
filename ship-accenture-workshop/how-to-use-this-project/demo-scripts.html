@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Script — How to use this project · Claude Code Workshop</title>
+  <style>
+    @font-face {
+      font-family: 'Anthropic Sans';
+      src: url('assets/fonts/AnthropicSans-Roman-Web.woff2') format('woff2');
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('assets/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+      font-weight: 400;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Anthropic Sans', -apple-system, sans-serif;
+      background: #FAF9F5;
+      color: #141413;
+      line-height: 1.6;
+      padding: 48px;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .header img { width: 28px; height: 28px; }
+    .header h1 { font-size: 28px; font-weight: 500; }
+    .header-sub { font-size: 14px; color: #73726C; margin-bottom: 36px; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: #D97757; text-decoration: none;
+      margin-bottom: 24px; font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    .toc {
+      position: sticky; top: 0; z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+      margin-bottom: 48px;
+      padding: 18px 20px;
+      background: #fff;
+      border: 1px solid rgba(31,30,29,0.08);
+      border-radius: 10px;
+      font-size: 13px;
+      box-shadow: 0 1px 3px rgba(31,30,29,0.04);
+    }
+    .toc a { color: #3D3D3A; text-decoration: none; }
+    .toc a:hover { color: #D97757; }
+    .toc-num { color: #D97757; font-weight: 600; margin-right: 6px; }
+
+    .setup-section {
+      margin-bottom: 48px;
+      border-left: 3px solid #73726C;
+      padding-left: 28px;
+    }
+    .setup-label {
+      font-size: 11px; font-weight: 600; color: #73726C;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .setup-title {
+      font-size: 22px; font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .demo-section {
+      margin-bottom: 56px;
+      border-left: 3px solid #D97757;
+      padding-left: 28px;
+    }
+
+    .demo-label {
+      font-size: 11px; font-weight: 600; color: #D97757;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .demo-title {
+      font-size: 24px; font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .demo-meta {
+      font-size: 13px; color: #73726C;
+      margin-bottom: 20px;
+    }
+
+    .demo-goal {
+      background: #fff;
+      border: 1px solid rgba(31,30,29,0.08);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+    }
+    .demo-goal strong { font-weight: 600; }
+    .demo-goal p { font-size: 14px; color: #3D3D3A; margin-top: 4px; }
+
+    h3.block-label {
+      font-size: 13px; font-weight: 600; color: #73726C;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .checklist {
+      list-style: none; padding: 0;
+      margin-bottom: 20px;
+    }
+    .checklist li {
+      padding: 5px 0;
+      font-size: 13.5px;
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+    .checklist li::before {
+      content: '\2610';
+      color: #D97757;
+      flex-shrink: 0;
+    }
+
+    .prompt-box {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .prompt-label {
+      font-size: 11px; font-weight: 600; color: #73726C;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .prompt-cmd {
+      padding: 14px 16px;
+      background: #0e0e0d;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #d1cfc5;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      user-select: all;
+      cursor: text;
+    }
+    .prompt-cmd .sh-prompt { color: #888; }
+    .prompt-cmd.shell { color: #a8d4a8; }
+
+    .prompt-box::before {
+      content: 'CLAUDE';
+      position: absolute;
+      top: -7px; right: 14px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      border-radius: 3px;
+      background: #D97757;
+      color: #fff;
+      font-family: 'Anthropic Sans', -apple-system, sans-serif;
+      z-index: 2;
+    }
+    .prompt-box:has(.prompt-cmd.shell)::before {
+      content: 'TERMINAL';
+      background: #2d4a2d;
+      color: #a8d4a8;
+    }
+
+    .say {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid rgba(31,30,29,0.06);
+      font-size: 13.5px;
+      color: #3D3D3A;
+      font-style: italic;
+    }
+    .say::before { content: '\1F4AC '; font-style: normal; }
+
+    .sees {
+      margin-bottom: 16px;
+      font-size: 13.5px;
+      color: #3D3D3A;
+    }
+    .sees strong { font-weight: 600; color: #141413; }
+
+    .tip-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: #D9775708;
+      border-radius: 8px;
+      border-left: 3px solid #D97757;
+      font-size: 13px;
+      color: #3D3D3A;
+    }
+    .tip-box strong { font-weight: 600; color: #D97757; }
+
+    .reset-box {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: rgba(115,114,108,0.06);
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: #73726C;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .reset-box::before {
+      content: 'RESET AFTER: ';
+      font-family: 'Anthropic Sans', sans-serif;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #73726C;
+    }
+
+    code.inline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: #f0efe8;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    kbd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      background: #fff;
+      border: 1px solid rgba(31,30,29,0.15);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 1px 6px;
+    }
+
+    .divider { height: 1px; background: rgba(31,30,29,0.08); margin: 16px 0 20px; }
+
+    .answers-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 13.5px;
+    }
+    .answers-table th {
+      text-align: left;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #73726C;
+      padding: 8px 12px;
+      border-bottom: 2px solid rgba(31,30,29,0.1);
+    }
+    .answers-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(31,30,29,0.06);
+      vertical-align: top;
+    }
+    .answers-table td:last-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #D97757;
+    }
+
+    .step-list {
+      list-style: none; padding: 0;
+      margin-bottom: 20px;
+      counter-reset: step-counter;
+    }
+    .step-list li {
+      padding: 8px 0;
+      font-size: 13.5px;
+      display: flex; gap: 10px; align-items: flex-start;
+      counter-increment: step-counter;
+    }
+    .step-list li::before {
+      content: counter(step-counter);
+      color: #fff;
+      background: #D97757;
+      font-size: 11px;
+      font-weight: 600;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">&larr; Back to workshop</a>
+
+<div class="header">
+  <img src="assets/clay-spark.svg" alt="">
+  <h1>How to use this project &mdash; Demo Script</h1>
+</div>
+<p class="header-sub">Live /ncp run &middot; kick off on slide 11, return on slide 22</p>
+
+<nav class="toc">
+  <a href="#preflight"><span class="toc-num">&starf;</span>Preflight</a>
+  <a href="#d1-kickoff"><span class="toc-num">1A</span>Kickoff &mdash; launch /ncp</a>
+  <a href="#d1-return"><span class="toc-num">1B</span>Return &mdash; tour the output</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PREFLIGHT -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="setup-section" id="preflight">
+  <div class="setup-label">Before the session</div>
+  <div class="setup-title">Preflight</div>
+  <ul class="checklist">
+    <li>cwd is <code class="inline">claude-code-accenture-enablement</code> repo root, on <code class="inline">main</code>, clean working tree</li>
+    <li>No existing <code class="inline">Acme Robotics 60 Min Workshop/</code> or <code class="inline">dist/acme-robotics-60-min-workshop/</code> &mdash; <code class="inline">rm -rf</code> if present from a dry run</li>
+    <li><code class="inline">claude</code> launches and <code class="inline">/ncp</code> is in the skill list (type <code class="inline">/</code> to confirm autocomplete)</li>
+    <li>Second terminal tab ready for Part 2</li>
+    <li>Terminal font size &ge; 18pt, light theme if possible</li>
+    <li>Close Slack, silence notifications, Do Not Disturb on</li>
+  </ul>
+
+  <div class="tip-box">
+    <strong>Dry-run backup.</strong> Before the session, do a successful <code class="inline">/ncp</code> dry run, then <code class="inline">cp -R "Acme Robotics 60 Min Workshop" .demo-backup/</code>. If the live run fails, you can restore from the backup instantly (see Recovery in Demo 1A).
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DEMO 1A — KICKOFF -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="d1-kickoff">
+  <div class="demo-label">Demo 1A &middot; Slide 11 &middot; ~4 min on-stage, then background</div>
+  <div class="demo-title">Kickoff &mdash; launch /ncp</div>
+  <div class="demo-meta">Audience sees /ncp ask its 8 questions and start building. We don't wait for it to finish.</div>
+
+  <div class="demo-goal">
+    <strong>What the room sees:</strong>
+    <p>Type <code class="inline">/ncp</code>, answer 8 questions, Claude starts resolving the slide set, writing presentation-spec.json, and spawning a demo-repo subagent. We move on to the next slides while it builds in the background.</p>
+  </div>
+
+  <h3 class="block-label">Run</h3>
+
+  <div class="prompt-box">
+    <div class="prompt-label">Slash command</div>
+    <div class="prompt-cmd">/ncp</div>
+  </div>
+
+  <h3 class="block-label">Answers (type these in order)</h3>
+
+  <table class="answers-table">
+    <thead>
+      <tr><th>Question</th><th>Answer</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Picked slides from the planner?</td><td><em>(leave empty, press Enter)</em></td></tr>
+      <tr><td>Which customer?</td><td>Acme Robotics</td></tr>
+      <tr><td>Live demos?</td><td>yes</td></tr>
+      <tr><td>Hands-on exercises?</td><td>no</td></tr>
+      <tr><td>Platform?</td><td>bedrock</td></tr>
+      <tr><td>Session length?</td><td>60</td></tr>
+      <tr><td>Audience experience?</td><td>mixed</td></tr>
+      <tr><td>Demo vehicle + domain?</td><td>arm-controller: industrial robotics</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sees">
+    Claude resolves the slide set, writes <code class="inline">presentation-spec.json</code>, spawns a demo-repo subagent to build <code class="inline">arm-controller/</code> with a planted bug.
+  </div>
+
+  <div class="say">"It's writing ~35 slides, a demo repo with one failing test, speaker notes, and a runbook. We'll come back in 10 minutes."</div>
+
+  <div class="tip-box">
+    <strong>Recovery:</strong> If /ncp hangs &gt;90s on a question or errors: <kbd>Ctrl-C</kbd>, say "I ran this an hour ago &mdash; here's the output", then run:<br>
+    <code class="inline">cp -R ".demo-backup/Acme Robotics 60 Min Workshop" .</code> and <code class="inline">rsync -a "Acme Robotics 60 Min Workshop/" dist/acme-robotics-60-min-workshop/</code>.<br>
+    (Requires the <code class="inline">.demo-backup/</code> from your dry run &mdash; see Preflight.)
+  </div>
+
+  <div class="reset-box">rm -rf "Acme Robotics 60 Min Workshop" "dist/acme-robotics-60-min-workshop" &mdash; clears for a fresh run</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DEMO 1B — RETURN -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="demo-section" id="d1-return">
+  <div class="demo-label">Demo 1B &middot; Slide 22 &middot; ~5 min</div>
+  <div class="demo-title">Return &mdash; tour the output</div>
+  <div class="demo-meta">Tour what /ncp produced; tie back to the smoke-test slide.</div>
+
+  <div class="demo-goal">
+    <strong>What the room sees:</strong>
+    <p>Open the generated deck, flip through slides, show speaker notes. Open the generated demo-scripts.html. Run the planted-bug test. Peek at presentation-spec.json. Everything works on first run.</p>
+  </div>
+
+  <h3 class="block-label">Steps</h3>
+
+  <ol class="step-list">
+    <li><code class="inline">open "dist/acme-robotics-60-min-workshop/deck.html"</code> &mdash; arrow through 4-5 slides, hit <kbd>S</kbd> to show speaker notes pop-out</li>
+    <li><code class="inline">open "dist/acme-robotics-60-min-workshop/demo-scripts.html"</code> &mdash; point at Preflight / Prompt / Recovery sections</li>
+    <li><code class="inline">cd "Acme Robotics 60 Min Workshop/arm-controller" &amp;&amp; npm test</code> &mdash; 1 red test (the planted bug)</li>
+    <li><code class="inline">cat presentation-spec.json | head -30</code> &mdash; show the <code class="inline">demos[]</code> entry</li>
+  </ol>
+
+  <div class="say">"Everything you saw on the smoke-test slide &mdash; this is where you'd run it. Exactly 1 red test, every prompt copy-pasteable, every slide renders."</div>
+
+  <div class="tip-box">
+    <strong>Recovery:</strong> If <code class="inline">npm test</code> passes (bug didn't plant): open <code class="inline">lib/</code> and point at the file structure instead &mdash; "the bug library picks one of 6 patterns, here's where it lands."
+  </div>
+
+  <div class="reset-box">rm -rf "Acme Robotics 60 Min Workshop" "dist/acme-robotics-60-min-workshop" &mdash; clears for next session</div>
+</div>
+
+</body>
+</html>
