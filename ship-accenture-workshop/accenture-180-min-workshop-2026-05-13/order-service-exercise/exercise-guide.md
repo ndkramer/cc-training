@@ -47,7 +47,7 @@ claude
 Then paste:
 
 ```
-Find and fix the failing npm test
+Test is failing in order-service. Find and fix the failing npm test
 ```
 
 **Step 2 — Watch Claude grep, read, edit:**
